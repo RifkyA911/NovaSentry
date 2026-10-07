@@ -90,4 +90,9 @@ impl VectorStore for InMemoryVectorStore {
         docs.clear();
         Ok(())
     }
+
+    async fn get_all_documents(&self) -> Result<Vec<VectorDocument>, SentryError> {
+        let docs = self.documents.read().await;
+        Ok(docs.clone())
+    }
 }

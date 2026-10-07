@@ -159,4 +159,23 @@ impl SentryEngine {
             generated_at: Utc::now(),
         })
     }
+
+    /// Direct test of input guardrail rules
+    pub async fn test_guardrail_input(&self, input: &str) -> Result<GuardrailVerdict, SentryError> {
+        if let Some(guardrail) = &self.guardrail {
+            guardrail.inspect_input(input).await
+        } else {
+            Ok(GuardrailVerdict::safe())
+        }
+    }
+
+    /// Direct test of output guardrail rules
+    pub async fn test_guardrail_output(&self, output: &str, context: &str) -> Result<GuardrailVerdict, SentryError> {
+        if let Some(guardrail) = &self.guardrail {
+            guardrail.inspect_output(output, context).await
+        } else {
+            Ok(GuardrailVerdict::safe())
+        }
+    }
 }
+

@@ -60,6 +60,14 @@ impl MockLlmGenerator {
 
 #[async_trait]
 impl LlmClient for MockLlmGenerator {
+    fn model_name(&self) -> &str {
+        if self.model_name.is_empty() {
+            "NovaSentry-Reasoner-v1"
+        } else {
+            &self.model_name
+        }
+    }
+
     async fn generate(&self, prompt: &str, system_context: Option<&str>) -> Result<String, SentryError> {
         let mut response = String::new();
 

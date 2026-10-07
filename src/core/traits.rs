@@ -48,6 +48,11 @@ pub trait VectorStore: Send + Sync {
 
     /// Clear all documents in the store.
     async fn clear(&self) -> Result<(), SentryError>;
+
+    /// Return all stored vector documents (useful for inspection and WebUI).
+    async fn get_all_documents(&self) -> Result<Vec<VectorDocument>, SentryError> {
+        Ok(Vec::new())
+    }
 }
 
 /// Component contract for modern RAG retrieval (Dense, Sparse, or Hybrid).
@@ -62,6 +67,11 @@ pub trait Retriever: Send + Sync {
 pub trait LlmClient: Send + Sync {
     /// Generate a completion given a prompt and optional system context.
     async fn generate(&self, prompt: &str, system_context: Option<&str>) -> Result<String, SentryError>;
+
+    /// Model name or identifier.
+    fn model_name(&self) -> &str {
+        "NovaSentry-Reasoner-v1"
+    }
 }
 
 /// Security assessment verdict from NovaSentry guardrail scan.

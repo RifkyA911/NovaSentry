@@ -4,6 +4,7 @@
 
 pub mod components;
 pub mod core;
+pub mod web;
 
 pub mod prelude {
     pub use crate::components::{
