@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bannerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090a0f" />
+      <stop offset="40%" stop-color="#111422" />
+      <stop offset="100%" stop-color="#06070a" />
+    </linearGradient>
+
+    <!-- Carrot Orange to Amber Gradients -->
+    <linearGradient id="carrotGradient" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#ffedd5" />
+      <stop offset="25%" stop-color="#fb923c" />
+      <stop offset="70%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff7849" />
+      <stop offset="60%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#c2410c" />
+    </linearGradient>
+
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f97316" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#fb923c" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0.8" />
+    </linearGradient>
+
+    <filter id="glowCarrot" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <pattern id="cyberGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(249, 115, 22, 0.07)" stroke-width="1" />
+      <circle cx="0" cy="0" r="1.5" fill="rgba(249, 115, 22, 0.15)" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="300" rx="16" fill="url(#bannerBg)" />
+  <rect width="960" height="300" rx="16" fill="url(#cyberGrid)" />
+
+  <!-- Ambient Glow Orbs -->
+  <circle cx="160" cy="150" r="120" fill="#f97316" opacity="0.12" filter="url(#glowCarrot)" />
+  <circle cx="850" cy="80" r="140" fill="#ea580c" opacity="0.08" filter="url(#glowCarrot)" />
+
+  <!-- Border Frame -->
+  <rect x="2" y="2" width="956" height="296" rx="14" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />
+
+  <!-- LEFT: LOGO ICON -->
+  <g transform="translate(60, 45)">
+    <!-- Hex Shield -->
+    <path d="M 90 12 L 150 42 L 150 120 C 150 162 90 196 90 196 C 90 196 30 162 30 120 L 30 42 Z" 
+          fill="#13111c" 
+          stroke="url(#shieldGrad)" 
+          stroke-width="3.5" 
+          stroke-linejoin="round"
+          filter="url(#glowCarrot)" />
+
+    <!-- Inner Shield Guideline -->
+    <path d="M 90 28 L 136 51 L 136 116 C 136 148 90 176 90 176 C 90 176 44 148 44 116 L 44 51 Z" 
+          fill="none" 
+          stroke="#f97316" 
+          stroke-width="1.5" 
+          stroke-opacity="0.4"
+          stroke-dasharray="4, 4" />
+
+    <!-- Central Diamond & Circuit Nodes -->
+    <polygon points="90,70 108,88 108,122 90,136 72,122 72,88" 
+             fill="url(#carrotGradient)" />
+    <polygon points="90,82 98,92 98,118 90,126 82,118 82,92" 
+             fill="#ffffff" />
+    <circle cx="90" cy="105" r="4" fill="#ea580c" />
+
+    <line x1="90" y1="46" x2="90" y2="70" stroke="#f97316" stroke-width="2.5" />
+    <circle cx="90" cy="45" r="4" fill="#ffedd5" />
+
+    <line x1="72" y1="95" x2="52" y2="108" stroke="#f97316" stroke-width="2" />
+    <circle cx="50" cy="109" r="3.5" fill="#fb923c" />
+
+    <line x1="108" y1="95" x2="128" y2="108" stroke="#f97316" stroke-width="2" />
+    <circle cx="130" cy="109" r="3.5" fill="#fb923c" />
+
+    <line x1="90" y1="136" x2="90" y2="164" stroke="#fb923c" stroke-width="2" stroke-linecap="round" />
+    <circle cx="90" cy="166" r="3.5" fill="#f97316" />
+  </g>
+
+  <!-- RIGHT: BRAND TEXT & TAGLINES -->
+  <g transform="translate(265, 65)">
+    <!-- Brand Title -->
+    <text x="0" y="52" 
+          font-family="'Inter', -apple-system, sans-serif" 
+          font-size="46" 
+          font-weight="900" 
+          letter-spacing="2" 
+          fill="url(#carrotGradient)">
+      NOVASENTRY
+    </text>
+
+    <!-- Version Badge -->
+    <rect x="330" y="24" width="90" height="24" rx="12" fill="rgba(249, 115, 22, 0.15)" stroke="#f97316" stroke-width="1" />
+    <text x="375" y="40" 
+          font-family="'JetBrains Mono', monospace" 
+          font-size="11" 
+          font-weight="700" 
+          letter-spacing="1" 
+          fill="#fb923c" 
+          text-anchor="middle">
+      v0.1.0 RUST
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="86" 
+          font-family="'Inter', sans-serif" 
+          font-size="14.5" 
+          font-weight="600" 
+          letter-spacing="1.2" 
+          fill="#94a3b8">
+      AUTONOMOUS MULTI-AGENT AI RAG SECURITY SENTRY &amp; GUARDRAIL ENGINE
+    </text>
+
+    <!-- Description line -->
+    <text x="0" y="112" 
+          font-family="'JetBrains Mono', monospace" 
+          font-size="12" 
+          fill="#64748b">
+      Dual Guardrail Interceptor • 384-D Hybrid RAG • n8n-Style Realtime Flow Visualizer
+    </text>
+
+    <!-- Feature Badges -->
+    <g transform="translate(0, 136)">
+      <!-- Badge 1 -->
+      <rect x="0" y="0" width="112" height="26" rx="6" fill="#1e1c29" stroke="rgba(249, 115, 22, 0.4)" stroke-width="1" />
+      <text x="56" y="17" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fb923c" text-anchor="middle">⚡ PURE RUST</text>
+
+      <!-- Badge 2 -->
+      <rect x="122" y="0" width="148" height="26" rx="6" fill="#1e1c29" stroke="rgba(249, 115, 22, 0.4)" stroke-width="1" />
+      <text x="196" y="17" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fb923c" text-anchor="middle">🛡️ DUAL GUARDRAIL</text>
+
+      <!-- Badge 3 -->
+      <rect x="280" y="0" width="156" height="26" rx="6" fill="#1e1c29" stroke="rgba(249, 115, 22, 0.4)" stroke-width="1" />
+      <text x="358" y="17" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fb923c" text-anchor="middle">🔍 HYBRID RAG (RRF)</text>
+
+      <!-- Badge 4 -->
+      <rect x="446" y="0" width="168" height="26" rx="6" fill="#1e1c29" stroke="rgba(249, 115, 22, 0.4)" stroke-width="1" />
+      <text x="530" y="17" font-family="'JetBrains Mono', monospace" font-size="10.5" font-weight="600" fill="#fb923c" text-anchor="middle">🎛️ n8n-STYLE FLOW UI</text>
+    </g>
+  </g>
+</svg>
