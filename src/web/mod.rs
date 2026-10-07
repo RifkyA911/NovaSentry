@@ -17,6 +17,7 @@ use crate::core::models::{AlertSeverity, Document, SentryAlert};
 pub mod auth;
 
 pub const INDEX_HTML: &str = include_str!("assets/index.html");
+pub const LOGO_SVG: &str = include_str!("assets/logo.svg");
 
 #[derive(Clone)]
 pub struct WebAppState {
@@ -108,6 +109,7 @@ pub struct AuthResponse {
 pub fn create_router(state: WebAppState) -> Router {
     Router::new()
         .route("/", get(serve_index))
+        .route("/assets/logo.svg", get(serve_logo))
         .route("/api/stats", get(get_stats))
         .route("/api/knowledge", get(get_knowledge).post(ingest_knowledge))
         .route("/api/investigate", post(investigate_alert))
@@ -124,6 +126,10 @@ pub fn create_router(state: WebAppState) -> Router {
 
 async fn serve_index() -> impl IntoResponse {
     Html(INDEX_HTML)
+}
+
+async fn serve_logo() -> impl IntoResponse {
+    ([(axum::http::header::CONTENT_TYPE, "image/svg+xml")], LOGO_SVG)
 }
 
 async fn get_stats(State(state): State<WebAppState>) -> impl IntoResponse {
