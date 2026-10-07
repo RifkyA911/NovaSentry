@@ -1,135 +1,171 @@
-# 🛡️ NovaSentry: Autonomous Multi-Agent AI RAG Security Sentry
+<div align="center">
 
-[![Rust](https://img.shields.io/badge/Language-Rust_2021-orange.svg?logo=rust)](https://www.rust-lang.org/)
-[![Framework](https://img.shields.io/badge/Web_Server-Axum_0.7-blue.svg)](https://github.com/tokio-rs/axum)
-[![UI/UX](https://img.shields.io/badge/Frontend-Tailwind_CSS_SOC_Dashboard-38bdf8.svg?logo=tailwindcss)](https://tailwindcss.com/)
-[![Runtime](https://img.shields.io/badge/Async_Runtime-Tokio_1.38-red.svg)](https://tokio.rs/)
-[![License](https://img.shields.io/badge/License-MIT_OR_Apache--2.0-green.svg)](LICENSE)
+<img src="assets/banner.svg" alt="NovaSentry Banner" width="100%" />
 
-**NovaSentry** is a high-performance, modular AI RAG (Retrieval-Augmented Generation) security sentry and knowledge intelligence engine written in Rust. It autonomously monitors live security telemetry, intercepts adversarial prompt injections, and generates incident triage analysis grounded in verified organizational knowledge and playbooks.
+<br/>
 
-Featuring an embedded **Tailwind CSS Cyberpunk / SOC Sentinel WebUI**, NovaSentry provides real-time telemetry inspection, hybrid vector search ranking, attack simulation, and live compliance audit logs with zero external Node/npm dependencies.
+[![Rust](https://img.shields.io/badge/Language-Rust_2021-f97316.svg?logo=rust)](https://www.rust-lang.org/)
+[![Web Server](https://img.shields.io/badge/Web_Server-Axum_0.7-ea580c.svg)](https://github.com/tokio-rs/axum)
+[![Frontend](https://img.shields.io/badge/Visualizer-n8n--Style_Flow_Graph-fb923c.svg)](https://tailwindcss.com/)
+[![Runtime](https://img.shields.io/badge/Async_Runtime-Tokio_1.38-c2410c.svg)](https://tokio.rs/)
+[![Theme](https://img.shields.io/badge/Theme-Carrot_Orange_%26_Dark%2FLight-ffedd5.svg)](#)
+[![License](https://img.shields.io/badge/License-MIT_OR_Apache--2.0-10b981.svg)](LICENSE)
+
+<p align="center">
+  <b>Autonomous Multi-Agent AI RAG Security Sentry &amp; Guardrail Engine in Rust</b><br/>
+  Featuring an Interactive n8n-Style Workflow Graph, Dual Perimeter Scanning, and Hybrid Vector Knowledge Grounding
+</p>
+
+</div>
 
 ---
 
-## 🏛️ System Architecture
+## 📖 Ringkasan Proyek (Overview)
 
-```text
-       ┌────────────────────────────────────────────────────────┐
-       │      Incoming Live Telemetry / User Prompt Alert       │
-       └───────────────────────────┬────────────────────────────┘
-                                   │
-                                   ▼
-             ┌───────────────────────────────────────────┐
-             │       NovaGuardrail (Input Scanner)       │
-             │   - Prompt Injection Detection            │
-             │   - Adversarial Instruction Tampering     │
-             └─────────────────────┬─────────────────────┘
-                       Passed      │     Blocked ──► [Immediate Sentry Alert & Triage]
-                                   ▼
-             ┌───────────────────────────────────────────┐
-             │              HybridRetriever              │
-             │   - Dense Cosine Similarity (Embedder)    │
-             │   - Sparse Lexical Match & RRF Fusion     │
-             └─────────────────────┬─────────────────────┘
-                                   │ Top-K Chunks
-                                   ▼
-             ┌───────────────────────────────────────────┐
-             │              PromptBuilder                │
-             │   - Formatted Citations & Grounding Rules │
-             └─────────────────────┬─────────────────────┘
-                                   │
-                                   ▼
-             ┌───────────────────────────────────────────┐
-             │         LlmClient (Synthesizer Engine)    │
-             │   - Context-grounded Incident Analysis    │
-             └─────────────────────┬─────────────────────┘
-                                   │ Raw Synthesis
-                                   ▼
-             ┌───────────────────────────────────────────┐
-             │       NovaGuardrail (Output Scanner)      │
-             │   - Credential / Secret Leak Prevention   │
-             │   - Confidentiality Policy Enforcement    │
-             └─────────────────────┬─────────────────────┘
-                                   │
-                                   ▼
-             ┌───────────────────────────────────────────┐
-             │         SentryAuditor & AnalysisReport    │
-             │   - Governance Logging & Remediation Plan │
-             └───────────────────────────────────────────┘
+**NovaSentry** adalah sistem pengawal keamanan (*security sentry*) dan inteligensi berbasis **AI RAG (Retrieval-Augmented Generation)** otonom berkinerja tinggi yang ditulis dalam bahasa pemrograman **Rust**. Sistem ini dirancang untuk memantau telemetri keamanan kluster secara real-time, mencegat manipulasi prompt injeksi (*prompt injection attack*), serta menghasilkan analisis triage insiden yang berlandaskan pada *runbooks* dan *advisories* organisasi yang terverifikasi.
+
+Pada iterasi ini, NovaSentry dilengkapi dengan **Tailwind CSS SOC Sentinel Web Dashboard** beraksen gradasi **Carrot Orange** (`#ea580c` ➔ `#f97316` ➔ `#fb923c`), fitur **n8n-Style Realtime Flow Visualizer** dengan garis kabel animasi dan *dot-mesh background*, serta **Dark/Light Theme Toggle** yang diterapkan secara presisi ke seluruh komponen kartu (*cards*), formulir, tabel audit, dan kanvas node graph.
+
+---
+
+## 🏛️ Arsitektur Alur Sistem (Mermaid Flow Diagram)
+
+Berikut adalah diagram alur visual menyeluruh dari siklus pemeriksaan telemetri, penyaringan perimeter ganda, dan sintesis mitigasi RAG:
+
+```mermaid
+flowchart TD
+    %% Styling Definitions
+    classDef ingress fill:#fff7ed,stroke:#ea580c,stroke-width:2px,color:#7c2d12;
+    classDef guardrail fill:#ffe4e6,stroke:#f43f5e,stroke-width:2px,color:#881337;
+    classDef rag fill:#eff6ff,stroke:#0284c7,stroke-width:2px,color:#0c4a6e;
+    classDef llm fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+    classDef audit fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#581c87;
+    classDef danger fill:#ef4444,stroke:#991b1b,stroke-width:2px,color:#ffffff;
+    classDef safe fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#065f46;
+
+    subgraph INGRESS["1. Telemetri & Ingress Perimeter"]
+        A["📡 Live Telemetry / User Prompt Alert<br/>(k8s-audit, WAF proxy, API Gateway)"]:::ingress
+    end
+
+    subgraph GUARD_IN["2. NovaGuardrail (Ingress Scanner)"]
+        B{"🛡️ Input Security Scan<br/>• Prompt Injection?<br/>• Jailbreak / DAN mode?<br/>• Instruction Override?"}:::guardrail
+        B_BLOCKED["🚨 SECURITY INTERCEPTION<br/>• Auto-Quarantine Source<br/>• Level-1 Alarm Triggered"]:::danger
+    end
+
+    subgraph RETRIEVAL["3. Hybrid Knowledge Retrieval"]
+        C["🗄️ In-Memory Vector Store<br/>(384-Dim Normalized Space)"]:::rag
+        D["🔍 HybridRetriever Engine<br/>• Dense Cosine Similarity<br/>• Sparse BM25 Lexical Match<br/>• Reciprocal Rank Fusion (RRF)"]:::rag
+        C -->|Indexed Playbooks| D
+    end
+
+    subgraph SYNTHESIS["4. Prompt Grounding & LLM Reasoner"]
+        E["📝 PromptBuilder<br/>(Citation Rules & Strict Grounding)"]:::llm
+        F["🧠 LLM Reasoner Engine<br/>(Context-Grounded Incident Synthesis)"]:::llm
+        E --> F
+    end
+
+    subgraph GUARD_OUT["5. NovaGuardrail (Egress Filter)"]
+        G{"🔒 Output Scanner<br/>• Bearer JWT Leak?<br/>• AWS Key Exfiltration?<br/>• PII Exposure?"}:::guardrail
+        G_REDACT["🛡️ Confidentiality Policy Enforced<br/>(Sensitive Output Redacted)"]:::danger
+    end
+
+    subgraph GOVERNANCE["6. Sentry Compliance & Audit"]
+        H["📋 SentryAuditor & Telemetry Log<br/>• Immutable Latency (ms)<br/>• Risk Score (0.0 - 1.0)<br/>• Forensic Audit Trail"]:::audit
+        I["✅ Prescriptive Incident Remediation Ticket<br/>(Actionable SOC Containment Steps)"]:::safe
+    end
+
+    %% Flow Connections
+    A --> B
+    B -- "🚨 Terdeteksi Ancaman" --> B_BLOCKED
+    B_BLOCKED --> H
+    B -- "✅ Parameter Aman" --> D
+    D -->|Top-K Chunks| E
+    F --> G
+    G -- "⚠️ Bocoran Ditemukan" --> G_REDACT
+    G -- "✅ Bersih" --> I
+    G_REDACT --> H
+    I --> H
 ```
 
 ---
 
-## ✨ Key Features
+## ⚡ Fitur Utama (Key Features)
 
-1. **⚡ Cyberpunk & Professional SOC Sentinel WebUI**:
-   - Modern Tailwind CSS dark glassmorphism dashboard styled for Security Operations Centers (SOC).
-   - Embedded directly in the Rust binary via `include_str!` — runs instantly without requiring Node.js, npm, or webpack.
-   - Live execution pipeline visualizer tracking each stage from input scanner to audit record.
+### 1. 🎛️ n8n-Style Realtime Flow Visualizer
+- **Interactive Node Graph Workspace**: Kanvas node graph dengan *dot-mesh background* (`mesh-bg-dark` / `mesh-bg-light`).
+- **Garis Koneksi Animasi (Animated Pulse Wires)**: Kabel busur kurva Bezier SVG dengan animasi aliran pulsa (`wire-active` dash-offset) yang memvisualisasikan paket data bergerak antar node.
+- **Node State Dinamis**: Node berubah warna secara real-time (`PASSED` ➔ hijau berpendar, `BLOCKED` ➔ merah alarm darurat, `PROCESSING` ➔ gradasi oranye menyala).
+- **Simulasi Interaktif 1-Klik**: Tombol simulasi instan untuk mengamati respons sistem terhadap *Legitimate Flow* vs *Adversarial Interception*.
 
-2. **🛡️ Dual-Perimeter Guardrail Defense (`NovaGuardrail`)**:
-   - **Ingress Scanner**: Intercepts jailbreaks, prompt injections, and adversarial instruction tampering (e.g. `ignore previous instructions`, `bypass policy`, `dan mode`).
-   - **Egress Scanner**: Prevents confidential credential exfiltration, JWT leaks, and AWS access key disclosure.
+### 2. 🎨 UI/UX Redesign dengan Carrot Orange Accent & Theme Toggle
+- **Sidebar Navigasi Modern**: Tata letak enterprise ala Datadog/CrowdStrike dengan pemisahan menu yang rapi (Dashboard, Flow Visualizer, Triage Lab, Vector Runbooks, Guardrail Lab, Audit Log).
+- **Toggle Mode Gelap & Terang (Dark / Light)**:
+  - Mode Gelap: Latar hitam cyber (`#07090e`) dengan kartu *deep glassmorphism* (`#0f1422`).
+  - Mode Terang: Latar bersih sejuk (`#f8fafc`) dengan kartu putih elegan dan bayangan halus.
+  - Teraplikasi secara menyeluruh ke seluruh kartu, input form, tabel audit, dan teks. Preferensi disimpan otomatis di `localStorage`.
+- **Aksen Gradasi Carrot Orange**: Warna primer oranye wortel (`#ea580c` ➔ `#f97316` ➔ `#fb923c`) melambangkan kewaspadaan (*alertness*) dan ketangkasan sentri.
 
-3. **🔍 Hybrid RAG Knowledge Retrieval (`HybridRetriever`)**:
-   - Combines 384-dimensional dense semantic vector similarity with sparse lexical matching using **Reciprocal Rank Fusion (RRF)**.
-   - Grounded context synthesis ensures that mitigation steps match official incident response runbooks and CVE advisories.
+### 3. 🛡️ Dual-Perimeter Guardrail Engine (`NovaGuardrail`)
+- **Ingress Scanner**: Memeriksa seluruh muatan teks dan telemetri sensor sebelum menyentuh model LLM. Mencegah manipulasi sistem prompt, *DAN mode*, pembocoran prompt tersembunyi, dan *policy bypass*.
+- **Egress Scanner**: Memindai output teks hasil sintesis model terhadap kebocoran token autentikasi (JWT Bearer, kunci privat SSH/RSA, AWS access keys).
 
-4. **📚 Dynamic Runbook Ingestion**:
-   - Partitions playbooks with `RecursiveCharacterChunker` (token windowing with configurable boundary overlap).
-   - Indexes embeddings into `InMemoryVectorStore` with concurrent thread-safe read/write operations.
+### 4. 🔍 Hybrid RAG Knowledge Retrieval (`HybridRetriever`)
+- Memadukan penelusuran semantik vektor padat 384-D (Cosine Similarity) dengan pencocokan leksikal jarang (*BM25-like*).
+- Menggunakan algoritma **Reciprocal Rank Fusion (RRF)** untuk menyatukan peringkat dokumen sehingga menghasilkan konteks rujukan CVE/Runbook yang paling presisi.
 
-5. **📋 Governance & Compliance Audit Trail (`SentryAuditor`)**:
-   - In-memory immutable audit log recording latency (in milliseconds), risk scores, verdict flags, and full incident telemetry history.
+### 5. 📚 Ingestor Playbook & Vector Store Otonom
+- Pemotongan dokumen teks menggunakan [`RecursiveCharacterChunker`](src/components/chunker.rs) dengan ukuran *window* dan *overlap* adaptif.
+- Pengindeksan vektor instan ke dalam [`InMemoryVectorStore`](src/components/vector_store.rs) yang aman dari *data-race* (*thread-safe read/write*).
+
+### 6. 📋 Jejak Audit Kepatuhan & Forensik (`SentryAuditor`)
+- Log kepatuhan *in-memory* yang mencatat stempel waktu UTC, judul insiden, status kelolosan perimeter, skor risiko numerik, dan waktu pemrosesan (*latency*) dalam milidetik.
 
 ---
 
-## 🧩 Modular Trait Contracts
+## 🧩 Kontrak Modular Traits (Rust Architecture)
 
-NovaSentry isolates responsibilities via strict async traits defined in `src/core/traits.rs`:
+Arsitektur NovaSentry bersifat sepenuhnya lepas-pasang (*loosely coupled*) berkat trait asinkron Rust pada [`src/core/traits.rs`](src/core/traits.rs):
 
-| Trait | Core Responsibilities | Default Implementation |
+| Trait | Tanggung Jawab Komponen | Implementasi Bawaan |
 |---|---|---|
-| `Chunker` | Document partitioning & semantic windowing | `RecursiveCharacterChunker` |
-| `Embedder` | Text to dense vector transformations | `MockEmbedder` (384-dim normalized pseudo-semantic space) |
-| `VectorStore` | Chunk indexing & vector similarity search | `InMemoryVectorStore` |
-| `Retriever` | Hybrid multi-stage knowledge retrieval | `HybridRetriever` (Dense + Sparse RRF) |
-| `LlmClient` | Grounded context synthesis and reasoning | `MockLlmGenerator` (`NovaSentry-Reasoner-v1`) |
-| `GuardrailValidator` | Input injection scanning & output secret filtering | `NovaGuardrail` |
-| `SentryAuditor` | Compliance audit trail telemetry logging | `SentryAuditor` |
+| `Chunker` | Pemartisian dokumen panjang & penjagaan batas semantik | `RecursiveCharacterChunker` |
+| `Embedder` | Transformasi teks menjadi vektor padat 384 dimensi | `MockEmbedder` (Normalized Hashing Space) |
+| `VectorStore` | Pengindeksan & pencarian kemiripan kosinus thread-safe | `InMemoryVectorStore` |
+| `Retriever` | Penelusuran gabungan Dense + Sparse (RRF Fusion) | `HybridRetriever` |
+| `LlmClient` | Penalaran dan sintesis tiket investigasi tergrounding | `MockLlmGenerator` (`NovaSentry-Reasoner-v1`) |
+| `GuardrailValidator` | Pemindaian injeksi ingress & penapisan kebocoran egress | `NovaGuardrail` |
+| `SentryAuditor` | Pencatatan riwayat audit telemetri & analisis kepatuhan | `SentryAuditor` |
 
 ---
 
-## 🚀 Quickstart
+## 🚀 Panduan Memulai Cepat (Quickstart)
 
-### 1. Launch Web Dashboard (Default)
+### 1. Jalankan Web Dashboard (Bawaan)
 
-Launch the production sentinel service and open the WebUI in your browser:
+Jalankan server Axum dan buka antarmuka WebUI di peramban web:
 
 ```bash
 cargo run
 ```
 
-Then navigate to: **`http://localhost:3000`** (or `http://127.0.0.1:3000`).
+Buka URL di browser: **`http://localhost:3000`** (atau `http://127.0.0.1:3000`).
 
-Custom port option:
-
+Opsi port kustom:
 ```bash
 cargo run -- --port 8080
 ```
 
-### 2. Run Terminal CLI Demo
+### 2. Jalankan Mode Demo Terminal (Headless CLI)
 
-Run the automated headless architecture demo showcasing legitimate alert triage vs adversarial prompt injection:
+Jika ingin menjalankan simulasi uji coba di konsol terminal tanpa server web:
 
 ```bash
 cargo run -- --demo
 ```
 
-### 3. Run Test Suite
+### 3. Jalankan Pengujian (Test Suite)
 
-Run all unit and integration tests:
+Jalankan seluruh rangkaian tes komponen dan integrasi:
 
 ```bash
 cargo test
@@ -137,21 +173,19 @@ cargo test
 
 ---
 
-## 🔌 REST API Reference
+## 🔌 Dokumentasi REST API
 
-NovaSentry provides a REST API via Axum on port `3000`:
-
-| Method | Endpoint | Description |
+| Method | Endpoint | Deskripsi |
 |---|---|---|
-| `GET` | `/` | Serves the embedded Tailwind CSS SOC Web Dashboard |
-| `GET` | `/api/stats` | Retrieves current sentry status, chunk count, audit count, and model metadata |
-| `GET` | `/api/knowledge` | Lists all indexed vector documents and passage chunks |
-| `POST` | `/api/knowledge` | Ingests and vectorizes a new security playbook / CVE document |
-| `POST` | `/api/investigate` | Submits telemetry for guardrail scanning, hybrid retrieval, and LLM triage |
-| `GET` | `/api/audit` | Retrieves all recorded compliance and sentry audit records |
-| `POST` | `/api/guardrail/test` | Standalone evaluator for input injection and output data leakage rules |
+| `GET` | `/` | Menyajikan antarmuka Single Page Application (Tailwind SOC Dashboard) |
+| `GET` | `/api/stats` | Mengambil metrik sistem (jumlah chunk, total audit, dimensi vektor, model) |
+| `GET` | `/api/knowledge` | Mengambil seluruh daftar chunk pengetahuan di dalam basis data vektor |
+| `POST` | `/api/knowledge` | Melakukan chunking dan pengindeksan playbook / CVE baru |
+| `POST` | `/api/investigate` | Mengirim telemetri untuk dianalisis oleh pipeline RAG & Guardrail |
+| `GET` | `/api/audit` | Mengambil riwayat catatan kepatuhan dan audit forensic |
+| `POST` | `/api/guardrail/test` | Pengujian mandiri aturan guardrail ingress atau egress |
 
-### Example: Investigating an Alert via cURL
+### Contoh Pengujian Investigasi via cURL:
 
 ```bash
 curl -X POST http://127.0.0.1:3000/api/investigate \
@@ -166,6 +200,6 @@ curl -X POST http://127.0.0.1:3000/api/investigate \
 
 ---
 
-## 📄 License
+## 📄 Lisensi
 
-This project is licensed under the [MIT License](LICENSE) or Apache-2.0.
+Proyek ini dirilis di bawah lisensi ganda [MIT License](LICENSE) atau Apache-2.0.
