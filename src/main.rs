@@ -148,7 +148,7 @@ async fn run_cli_demo() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn run_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
+async fn run_web_server(host_str: &str, port: u16, db_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     let (sentry, vector_store, _) = build_sentry_engine().await?;
     let total_indexed = vector_store.count().await;
 
@@ -160,23 +160,36 @@ async fn run_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     println!("  📚 Indexed Chunks: {} chunks pre-loaded in memory", total_indexed);
     println!("  🛡️  Guardrail:      NovaGuardrail (Input & Output Scanner) ACTIVE");
     println!("  🧠 Reasoner:       NovaSentry-Reasoner-v1");
-    println!("  🌐 Web Dashboard:  http://127.0.0.1:{}", port);
-    println!("  🔌 API Endpoints:  http://127.0.0.1:{}/api/stats", port);
+    println!("  📦 Database:       SQLite ({})", db_path);
+    println!("  🔑 Default Admin:  User: 'admin' | Password: 'sentry123'");
+    println!("  🌐 Web Dashboard:  http://{}:{}", if host_str == "0.0.0.0" { "127.0.0.1" } else { host_str }, port);
+    println!("  🔌 API Endpoints:  http://{}:{}/api/stats", if host_str == "0.0.0.0" { "127.0.0.1" } else { host_str }, port);
     println!("============================================================");
     println!("Press Ctrl+C to terminate the sentry service.");
     println!();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], port));
-    novasentry::web::start_server(sentry, addr).await?;
+    let ip_addr: std::net::IpAddr = host_str.parse().unwrap_or(std::net::IpAddr::V4(std::net::Ipv4Addr::new(0, 0, 0, 0)));
+    let addr = SocketAddr::new(ip_addr, port);
+    novasentry::web::start_server(sentry, addr, db_path).await?;
 
     Ok(())
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load environment variables from .env file if present
+    dotenvy::dotenv().ok();
+
+    let env_port = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse::<u16>().ok())
+        .unwrap_or(3000);
+    let host_str = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "novasentry.db".to_string());
+
     let args: Vec<String> = std::env::args().collect();
 
-    let mut port = 3000u16;
+    let mut port = env_port;
     let mut run_demo_flag = false;
 
     let mut i = 1;
@@ -201,8 +214,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!();
                 println!("OPTIONS:");
                 println!("    -d, --demo            Run terminal CLI architecture demo");
-                println!("    -p, --port <PORT>     Set WebUI server port (default: 3000)");
+                println!("    -p, --port <PORT>     Set WebUI server port (default: 3000 or $PORT)");
                 println!("    -h, --help            Print help information");
+                println!();
+                println!("ENVIRONMENT VARIABLES (.env):");
+                println!("    HOST                  Bind address (default: 0.0.0.0)");
+                println!("    PORT                  Listen port (default: 3000)");
+                println!("    DATABASE_PATH         SQLite file path (default: novasentry.db)");
+                println!("    RUST_LOG              Tracing log filter (default: info)");
                 println!();
                 println!("EXAMPLES:");
                 println!("    cargo run                     # Launch Web Dashboard at http://localhost:3000");
@@ -218,6 +237,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if run_demo_flag {
         run_cli_demo().await
     } else {
-        run_web_server(port).await
+        run_web_server(&host_str, port, &db_path).await
     }
 }
