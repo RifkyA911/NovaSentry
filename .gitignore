@@ -3,5 +3,8 @@
 *.pdf
 *.log
 **/*.rs.bk
+*.db
+*.db-journal
+.env
 .DS_Store
 Thumbs.db

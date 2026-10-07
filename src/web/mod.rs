@@ -14,11 +14,14 @@ use tower_http::cors::CorsLayer;
 use crate::components::sentry::SentryEngine;
 use crate::core::models::{AlertSeverity, Document, SentryAlert};
 
+pub mod auth;
+
 pub const INDEX_HTML: &str = include_str!("assets/index.html");
 
 #[derive(Clone)]
 pub struct WebAppState {
     pub sentry: Arc<SentryEngine>,
+    pub auth: auth::AuthDb,
 }
 
 #[derive(Serialize)]
@@ -81,6 +84,27 @@ pub struct KnowledgeChunkItem {
     pub token_count: usize,
 }
 
+#[derive(Deserialize)]
+pub struct AuthRegisterRequest {
+    pub username: String,
+    pub password: String,
+    pub role: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct AuthLoginRequest {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Serialize)]
+pub struct AuthResponse {
+    pub success: bool,
+    pub token: Option<String>,
+    pub user: Option<auth::UserInfo>,
+    pub message: Option<String>,
+}
+
 pub fn create_router(state: WebAppState) -> Router {
     Router::new()
         .route("/", get(serve_index))
@@ -89,6 +113,11 @@ pub fn create_router(state: WebAppState) -> Router {
         .route("/api/investigate", post(investigate_alert))
         .route("/api/audit", get(get_audit_trail))
         .route("/api/guardrail/test", post(test_guardrail))
+        // Authentication Endpoints (SQLite Powered)
+        .route("/api/auth/register", post(auth_register))
+        .route("/api/auth/login", post(auth_login))
+        .route("/api/auth/me", get(auth_me))
+        .route("/api/auth/logout", post(auth_logout))
         .layer(CorsLayer::permissive())
         .with_state(state)
 }
@@ -275,14 +304,126 @@ async fn test_guardrail(
     }
 }
 
+// ==========================================
+// SQLITE AUTH HANDLERS
+// ==========================================
+
+async fn auth_register(
+    State(state): State<WebAppState>,
+    Json(payload): Json<AuthRegisterRequest>,
+) -> impl IntoResponse {
+    let role = payload.role.unwrap_or_else(|| "Security Operator".to_string());
+    match state.auth.register(&payload.username, &payload.password, &role).await {
+        Ok((user, token)) => (
+            StatusCode::OK,
+            Json(AuthResponse {
+                success: true,
+                token: Some(token),
+                user: Some(user),
+                message: Some("Registration successful".to_string()),
+            }),
+        )
+            .into_response(),
+        Err(err) => (
+            StatusCode::BAD_REQUEST,
+            Json(AuthResponse {
+                success: false,
+                token: None,
+                user: None,
+                message: Some(err),
+            }),
+        )
+            .into_response(),
+    }
+}
+
+async fn auth_login(
+    State(state): State<WebAppState>,
+    Json(payload): Json<AuthLoginRequest>,
+) -> impl IntoResponse {
+    match state.auth.login(&payload.username, &payload.password).await {
+        Ok((user, token)) => (
+            StatusCode::OK,
+            Json(AuthResponse {
+                success: true,
+                token: Some(token),
+                user: Some(user),
+                message: Some("Login successful".to_string()),
+            }),
+        )
+            .into_response(),
+        Err(err) => (
+            StatusCode::UNAUTHORIZED,
+            Json(AuthResponse {
+                success: false,
+                token: None,
+                user: None,
+                message: Some(err),
+            }),
+        )
+            .into_response(),
+    }
+}
+
+async fn auth_me(
+    State(state): State<WebAppState>,
+    headers: axum::http::HeaderMap,
+) -> impl IntoResponse {
+    let token = headers
+        .get("authorization")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|h| h.strip_prefix("Bearer ").or(Some(h)));
+
+    if let Some(token) = token {
+        if let Some(session) = state.auth.validate_token(token).await {
+            return (
+                StatusCode::OK,
+                Json(serde_json::json!({
+                    "authenticated": true,
+                    "session": session
+                })),
+            )
+                .into_response();
+        }
+    }
+
+    (
+        StatusCode::UNAUTHORIZED,
+        Json(serde_json::json!({
+            "authenticated": false,
+            "message": "Invalid or expired session token"
+        })),
+    )
+        .into_response()
+}
+
+async fn auth_logout(
+    State(state): State<WebAppState>,
+    headers: axum::http::HeaderMap,
+) -> impl IntoResponse {
+    let token = headers
+        .get("authorization")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|h| h.strip_prefix("Bearer ").or(Some(h)));
+
+    if let Some(token) = token {
+        let _ = state.auth.logout(token).await;
+    }
+
+    (StatusCode::OK, Json(serde_json::json!({ "success": true }))).into_response()
+}
+
 pub async fn start_server(
     sentry: Arc<SentryEngine>,
     addr: SocketAddr,
+    db_path: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let state = WebAppState { sentry };
+    let auth = auth::AuthDb::new(db_path)?;
+    let state = WebAppState { sentry, auth };
     let router = create_router(state);
 
     println!("⚡ NovaSentry Web Server binding to http://{}", addr);
+    println!("📦 SQLite Authentication Database: {}", db_path);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, router).await?;
     Ok(())

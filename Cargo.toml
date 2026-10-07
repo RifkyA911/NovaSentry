@@ -27,6 +27,11 @@ thiserror = "1.0.61"
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
 
+# Authentication & Database
+rusqlite = { version = "0.31", features = ["bundled"] }
+sha2 = "0.10"
+dotenvy = "0.15"
+
 # Logging & Telemetry
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
