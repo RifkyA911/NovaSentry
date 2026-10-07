@@ -1,16 +1,8 @@
+use std::net::SocketAddr;
 use std::sync::Arc;
 use novasentry::prelude::*;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("============================================================");
-    println!("     🛡️  NOVASENTRY - AUTONOMOUS AI RAG SECURITY SENTRY     ");
-    println!("              [Pseudo Prototype & Architecture Demo]        ");
-    println!("============================================================");
-    println!();
-
-    // 1. Initialize Modular Components
-    println!("[1/6] Initializing modular AI RAG & Security components...");
+async fn build_sentry_engine() -> Result<(Arc<SentryEngine>, Arc<InMemoryVectorStore>, SentryAuditor), Box<dyn std::error::Error>> {
     let chunker = Arc::new(RecursiveCharacterChunker::new(220, 30));
     let embedder = Arc::new(MockEmbedder::default());
     let vector_store = Arc::new(InMemoryVectorStore::new());
@@ -22,22 +14,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let guardrail = Arc::new(NovaGuardrail::new());
     let auditor = SentryAuditor::new();
 
-    let sentry = SentryEngine::new(
-        chunker,
-        embedder,
-        vector_store.clone(),
-        retriever,
-        generator,
-    )
-    .with_guardrail(guardrail)
-    .with_auditor(auditor.clone());
+    let sentry = Arc::new(
+        SentryEngine::new(
+            chunker,
+            embedder,
+            vector_store.clone(),
+            retriever,
+            generator,
+        )
+        .with_guardrail(guardrail)
+        .with_auditor(auditor.clone()),
+    );
 
-    println!("      ✓ Components initialized with 384-dim semantic embedding space.");
-    println!("      ✓ NovaGuardrail and SentryAuditor attached to SentryEngine.");
-    println!();
-
-    // 2. Ingest Knowledge Base Runbooks & Security Documents
-    println!("[2/6] Ingesting security incident playbooks & CVE runbooks...");
+    // Ingest baseline security incident playbooks & CVE runbooks
     let doc1 = Document::new(
         "CVE-2026-4412: SQL Injection in Gateway API",
         "Advisory CVE-2026-4412: Unsanitized user inputs in authentication gateway routes allow SQL injection.\n\
@@ -61,17 +50,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ).with_metadata("category", "Network")
      .with_metadata("severity", "Medium");
 
-    let c1 = sentry.ingest_knowledge(doc1).await?;
-    let c2 = sentry.ingest_knowledge(doc2).await?;
-    let c3 = sentry.ingest_knowledge(doc3).await?;
-    let total_indexed = vector_store.count().await;
+    sentry.ingest_knowledge(doc1).await?;
+    sentry.ingest_knowledge(doc2).await?;
+    sentry.ingest_knowledge(doc3).await?;
 
-    println!("      ✓ Ingested 3 knowledge documents (Indexed {} semantic chunks in vector store).", total_indexed);
-    assert_eq!(total_indexed, c1 + c2 + c3);
+    Ok((sentry, vector_store, auditor))
+}
+
+async fn run_cli_demo() -> Result<(), Box<dyn std::error::Error>> {
+    println!("============================================================");
+    println!("     🛡️  NOVASENTRY - AUTONOMOUS AI RAG SECURITY SENTRY     ");
+    println!("              [Terminal Prototype & Architecture Demo]      ");
+    println!("============================================================");
     println!();
 
-    // 3. Scenario A: Legitimate Security Alert Investigation
-    println!("[3/6] Scenario A: Incoming Live Telemetry Alert received from cluster sensor...");
+    println!("[1/5] Initializing modular AI RAG & Security components...");
+    let (sentry, vector_store, auditor) = build_sentry_engine().await?;
+    let total_indexed = vector_store.count().await;
+    println!("      ✓ Components initialized with 384-dim semantic embedding space.");
+    println!("      ✓ Ingested baseline knowledge (Indexed {} semantic chunks).", total_indexed);
+    println!();
+
+    // Scenario A: Legitimate Security Alert Investigation
+    println!("[2/5] Scenario A: Incoming Live Telemetry Alert received from cluster sensor...");
     let alert1 = SentryAlert::new(
         "ALERT-9042: Detected privilege escalation & secret dump attempt on auth-pod-worker-02",
         AlertSeverity::Critical,
@@ -85,7 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("      Telemetry:  {}", alert1.raw_telemetry);
     println!();
 
-    println!("[4/6] Sentry triggering Hybrid RAG Retrieval & Incident Analysis...");
+    println!("[3/5] Sentry triggering Hybrid RAG Retrieval & Incident Analysis...");
     let report1 = sentry.investigate_alert(&alert1).await?;
 
     println!("      ✓ Retrieved {} relevant knowledge context chunk(s):", report1.relevant_knowledge.len());
@@ -104,8 +105,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!();
 
-    // 4. Scenario B: Adversarial Prompt Injection Defense
-    println!("[5/6] Scenario B: Simulating Adversarial Prompt Injection in Telemetry...");
+    // Scenario B: Adversarial Prompt Injection Defense
+    println!("[4/5] Scenario B: Simulating Adversarial Prompt Injection in Telemetry...");
     let malicious_alert = SentryAlert::new(
         "ALERT-6660: System Diagnostic Probe",
         AlertSeverity::Low,
@@ -124,8 +125,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     println!();
 
-    // 5. Review Sentry Audit Trail
-    println!("[6/6] Sentry Audit Trail Telemetry Log:");
+    // Review Sentry Audit Trail
+    println!("[5/5] Sentry Audit Trail Telemetry Log:");
     let audit_records = auditor.get_records().await;
     println!("      Total audit events recorded: {}", audit_records.len());
     for record in audit_records {
@@ -141,8 +142,82 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!();
     println!("============================================================");
-    println!("✅ NovaSentry Pseudo Prototype execution completed successfully!");
+    println!("✅ NovaSentry Terminal Demo completed successfully!");
     println!("============================================================");
 
     Ok(())
+}
+
+async fn run_web_server(port: u16) -> Result<(), Box<dyn std::error::Error>> {
+    let (sentry, vector_store, _) = build_sentry_engine().await?;
+    let total_indexed = vector_store.count().await;
+
+    println!("============================================================");
+    println!("     🛡️  NOVASENTRY - AUTONOMOUS AI RAG SECURITY SENTRY     ");
+    println!("                 [Web Dashboard & REST API]                 ");
+    println!("============================================================");
+    println!("  ⚡ Mode:           Production Sentinel Service");
+    println!("  📚 Indexed Chunks: {} chunks pre-loaded in memory", total_indexed);
+    println!("  🛡️  Guardrail:      NovaGuardrail (Input & Output Scanner) ACTIVE");
+    println!("  🧠 Reasoner:       NovaSentry-Reasoner-v1");
+    println!("  🌐 Web Dashboard:  http://127.0.0.1:{}", port);
+    println!("  🔌 API Endpoints:  http://127.0.0.1:{}/api/stats", port);
+    println!("============================================================");
+    println!("Press Ctrl+C to terminate the sentry service.");
+    println!();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    novasentry::web::start_server(sentry, addr).await?;
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args: Vec<String> = std::env::args().collect();
+
+    let mut port = 3000u16;
+    let mut run_demo_flag = false;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--demo" | "-d" => {
+                run_demo_flag = true;
+            }
+            "--port" | "-p" => {
+                if i + 1 < args.len() {
+                    if let Ok(parsed) = args[i + 1].parse::<u16>() {
+                        port = parsed;
+                    }
+                    i += 1;
+                }
+            }
+            "--help" | "-h" => {
+                println!("NovaSentry - Autonomous AI RAG Security Sentry");
+                println!();
+                println!("USAGE:");
+                println!("    cargo run [OPTIONS]");
+                println!();
+                println!("OPTIONS:");
+                println!("    -d, --demo            Run terminal CLI architecture demo");
+                println!("    -p, --port <PORT>     Set WebUI server port (default: 3000)");
+                println!("    -h, --help            Print help information");
+                println!();
+                println!("EXAMPLES:");
+                println!("    cargo run                     # Launch Web Dashboard at http://localhost:3000");
+                println!("    cargo run -- --port 8080      # Launch on port 8080");
+                println!("    cargo run -- --demo           # Run standalone terminal demo");
+                return Ok(());
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+
+    if run_demo_flag {
+        run_cli_demo().await
+    } else {
+        run_web_server(port).await
+    }
 }
