@@ -1,0 +1,7 @@
+/target
+.swarm/
+*.pdf
+*.log
+**/*.rs.bk
+.DS_Store
+Thumbs.db
