@@ -203,6 +203,9 @@ Menguji seluruh 9 unit test dan integrasi (vektor kosinus semantik, deteksi inje
 | `GET` | `/api/chaos/experiments` | Publik | Mendapatkan katalog 6 skenario eksperimen chaos multi-agen |
 | `POST` | `/api/chaos/run` | Publik | Menyuntikkan gangguan chaos dan menjalankan protokol pemulihan mandiri |
 | `GET` | `/api/chaos/metrics` | Publik | Mengambil telemetri ketahanan, penghematan token, dan status circuit breaker |
+| `POST` | `/v1/chat/completions` | Publik / Proxy | **Reverse Proxy Kompatibel OpenAI**: Memeriksa prompt ingress, memblokir injection, menyensor PII/rahasia egress, dan mem-proxy ke hulu |
+| `GET` | `/v1/models` | Publik / Proxy | **Endpoint Model Kompatibel OpenAI**: Menampilkan daftar model lokal dan node mesh 9router |
+| `GET` | `/metrics` | Publik / SIEM | **Exporter Metrik Standar Prometheus**: Metrik telemetri yang dapat di-scrape oleh Grafana, Prometheus, dan Datadog |
 
 ---
 
@@ -212,7 +215,9 @@ Untuk standar keteknikan yang transparan, modul NovaSentry dikelompokkan ke dala
 
 | Tingkatan | Komponen | Status Implementasi | Deskripsi & Nilai Teknis |
 |---|---|---|---|
-| **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Siap Produksi** | Filter batas teks murni Rust berbasis regex berkecepatan sub-milidetik untuk mencegah prompt injection dan kebocoran rahasia. |
+| **🟢 STABLE** | `OpenAI Reverse Proxy (/v1)` | **Siap Produksi** | Gateway kompatibel OpenAI langsung pakai (`/v1/chat/completions`) untuk n8n, Hermes, Cursor, dan agen Python dengan intersepsi ancaman inline. |
+| **🟢 STABLE** | `Prometheus Exporter (/metrics)` | **Siap Produksi** | Format eksposisi standar Prometheus untuk saluran observabilitas Grafana, Datadog, dan SIEM. |
+| **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Siap Produksi** | Filter batas teks mendalam untuk mencegah prompt injection, delimiter breakout, kebocoran honeytoken, serta penyensoran PII/rahasia otomatis. |
 | **🟢 STABLE** | `SQLite Auth & Sessions` | **Siap Produksi** | Basis data SQLite lokal (`rusqlite`) dengan hashing kata sandi SHA-256 + garam acak serta manajemen sesi token. |
 | **🟢 STABLE** | `SentryEngine` (Triage Insiden) | **Siap Produksi** | Pipeline triage cerdas berbasis RAG yang mengaitkan insiden telemetri dengan panduan SOP melalui kemiripan vektor kosinus. |
 | **🟢 STABLE** | `InMemoryVectorStore` & `VectorMath` | **Siap Produksi** | Penyimpanan vektor dense 384-dimensi dengan dot-product dan penskoran hibrida Reciprocal Rank Fusion (RRF). |

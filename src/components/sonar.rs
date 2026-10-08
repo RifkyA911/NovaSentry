@@ -146,6 +146,11 @@ impl SonarEngine {
         self.tx.subscribe()
     }
 
+    /// Access the shared HTTP client for outbound gateway forwarding
+    pub fn http_client(&self) -> &reqwest::Client {
+        &self.http_client
+    }
+
     /// Emits a sonar packet to all connected SSE clients and caches it in memory
     pub async fn emit_packet(&self, packet: SonarPacket) {
         let tokens = (packet.prompt_tokens + packet.completion_tokens) as u64;

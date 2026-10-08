@@ -14,7 +14,7 @@ pub use chaos::{ChaosEngine, ChaosExecutionResult, ChaosExperiment, ChaosMetrics
 pub use chunker::RecursiveCharacterChunker;
 pub use embeddings::MockEmbedder;
 pub use generator::{MockLlmGenerator, PromptBuilder};
-pub use guardrail::NovaGuardrail;
+pub use guardrail::{DetailedInspection, GuardrailFinding, NovaGuardrail, ThreatCategory};
 pub use retriever::HybridRetriever;
 pub use sentry::SentryEngine;
 pub use sonar::{FlowType, NineRouterConfig, NineRouterStatus, RadarCoordinate, SonarEngine, SonarPacket, ThreatVerdict, TunnelProbeResult};

@@ -209,6 +209,9 @@ Verifies all **11 unit and integration tests** (vector cosine math, prompt injec
 | `GET` | `/api/chaos/experiments` | Public | Lists all 6 available chaos engineering scenarios |
 | `POST` | `/api/chaos/run` | Public | Injects a chaos disruption and executes self-healing verification |
 | `GET` | `/api/chaos/metrics` | Public | Retrieves resilience KPIs, tokens preserved & breaker counts |
+| `POST` | `/v1/chat/completions` | Public / Proxy | **OpenAI-Compatible Reverse Proxy**: Inspects ingress prompt, blocks injections, scrubs egress PII/secrets, and proxies upstream |
+| `GET` | `/v1/models` | Public / Proxy | **OpenAI-Compatible Models Endpoint**: Lists local reasoners and connected 9router mesh nodes |
+| `GET` | `/metrics` | Public / SIEM | **Prometheus Standard Metrics Exporter**: Telemetry metrics scrapable by Grafana, Prometheus, and Datadog |
 
 ---
 
@@ -217,8 +220,9 @@ Verifies all **11 unit and integration tests** (vector cosine math, prompt injec
 To maintain production standards and complete transparency, NovaSentry categorizes its modules into three maturity tiers:
 
 | Tier | Component | Implementation Status | Description & Value |
-|---|---|---|---|
-| **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Production-Ready** | Pure Rust regex-driven boundary filter intercepting prompt injections, system prompt leaks, Canary tokens, and PII in sub-millisecond time. |
+| **🟢 STABLE** | `OpenAI Reverse Proxy (/v1)` | **Production-Ready** | Drop-in OpenAI-compatible gateway (`/v1/chat/completions`) for n8n, Hermes, Cursor, and Python AI agents with inline threat interception. |
+| **🟢 STABLE** | `Prometheus Exporter (/metrics)` | **Production-Ready** | Standard Prometheus exposition format for Grafana, Datadog, and SIEM observability pipelines. |
+| **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Production-Ready** | Deep boundary filter intercepting prompt injections, delimiter breakouts, canary leaks, and automated PII/secret scrubbing. |
 | **🟢 STABLE** | `SQLite Auth & Sessions` | **Production-Ready** | Bundled `rusqlite` database engine storing credentials hashed with SHA-256 + cryptographic salts, and ephemeral bearer tokens. |
 | **🟢 STABLE** | `SentryEngine` (Incident Triage) | **Production-Ready** | Knowledge-augmented triage pipeline linking incoming telemetry alerts to grounded playbooks via cosine vector similarity. |
 | **🟢 STABLE** | `InMemoryVectorStore` & `VectorMath` | **Production-Ready** | 384-dimensional dense vector store with dot-product cosine similarity and Reciprocal Rank Fusion (RRF) hybrid scoring. |

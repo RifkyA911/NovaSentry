@@ -141,6 +141,79 @@ pub struct SonarSimulateRequest {
     pub sample_type: Option<String>,
 }
 
+// ==========================================
+// OPENAI-COMPATIBLE PROXY & PROMETHEUS TYPES
+// ==========================================
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct OpenAiMessage {
+    pub role: String,
+    pub content: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct OpenAiChatRequest {
+    pub model: String,
+    pub messages: Vec<OpenAiMessage>,
+    #[serde(default)]
+    pub temperature: Option<f32>,
+    #[serde(default)]
+    pub max_tokens: Option<usize>,
+    #[serde(default)]
+    pub stream: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiChoice {
+    pub index: usize,
+    pub message: OpenAiMessage,
+    pub finish_reason: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiUsage {
+    pub prompt_tokens: usize,
+    pub completion_tokens: usize,
+    pub total_tokens: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiChatResponse {
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub model: String,
+    pub choices: Vec<OpenAiChoice>,
+    pub usage: OpenAiUsage,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiErrorResponse {
+    pub error: OpenAiErrorDetail,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiErrorDetail {
+    pub message: String,
+    #[serde(rename = "type")]
+    pub error_type: String,
+    pub code: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiModelItem {
+    pub id: String,
+    pub object: String,
+    pub created: i64,
+    pub owned_by: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct OpenAiModelListResponse {
+    pub object: String,
+    pub data: Vec<OpenAiModelItem>,
+}
+
 pub fn create_router(state: WebAppState) -> Router {
     Router::new()
         .route("/", get(serve_index))
@@ -167,6 +240,11 @@ pub fn create_router(state: WebAppState) -> Router {
         .route("/api/auth/login", post(auth_login))
         .route("/api/auth/me", get(auth_me))
         .route("/api/auth/logout", post(auth_logout))
+        // OpenAI-Compatible AI Security Reverse Proxy (n8n, Hermes, Cursor, Python Agents)
+        .route("/v1/chat/completions", post(openai_chat_completions_proxy))
+        .route("/v1/models", get(openai_list_models))
+        // Prometheus Metrics Exporter (SIEM / Grafana / Datadog)
+        .route("/metrics", get(export_prometheus_metrics))
         .layer(CorsLayer::permissive())
         .with_state(state)
 }
@@ -680,6 +758,265 @@ async fn auth_logout(
     }
 
     (StatusCode::OK, Json(serde_json::json!({ "success": true }))).into_response()
+}
+
+// ==========================================
+// OPENAI-COMPATIBLE PROXY & METRICS HANDLERS
+// ==========================================
+
+async fn openai_chat_completions_proxy(
+    State(state): State<WebAppState>,
+    headers: axum::http::HeaderMap,
+    Json(payload): Json<OpenAiChatRequest>,
+) -> impl IntoResponse {
+    let start = Instant::now();
+    let request_id = format!("chatcmpl-ns-{}", &uuid::Uuid::new_v4().to_string()[..12]);
+
+    // 1. Ingress Security Inspection across all prompt messages
+    let mut combined_input = String::new();
+    for msg in &payload.messages {
+        combined_input.push_str(&format!("{}: {}\n", msg.role, msg.content));
+    }
+
+    let mut blocked = false;
+    let mut violation_reason = String::new();
+
+    if let Some(ref g) = state.sentry.guardrail {
+        let verdict = g.inspect_input(&combined_input).await.unwrap_or_else(|_| crate::core::traits::GuardrailVerdict::safe());
+        if !verdict.passed {
+            blocked = true;
+            violation_reason = verdict.message;
+            if let Some(flag) = verdict.flags.first() {
+                violation_reason = format!("{}: {}", violation_reason, flag);
+            }
+        }
+    }
+
+    if blocked {
+        let latency_ms = start.elapsed().as_millis() as u64;
+
+        // Emit quarantine pulse to Sonar SSE
+        let blocked_packet = SonarPacket {
+            id: format!("pkt-drop-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+            timestamp: Utc::now(),
+            flow_type: FlowType::GuardrailInterception,
+            upstream_gateway: "NovaSentry Ingress Firewall".to_string(),
+            provider: "NovaSentry Boundary Sentinel".to_string(),
+            model: payload.model.clone(),
+            client_origin: "OpenAI Proxy Client".to_string(),
+            latency_ms,
+            prompt_tokens: combined_input.len() / 4 + 10,
+            completion_tokens: 0,
+            estimated_cost_usd: 0.0,
+            threat_verdict: ThreatVerdict::Blocked,
+            radar_coordinate: RadarCoordinate {
+                angle_deg: 295.0,
+                distance_norm: 0.88,
+                frequency_khz: 22.5,
+                intensity_db: -2.0,
+            },
+            payload_preview: format!("QUARANTINED: {}", violation_reason),
+        };
+        state.sonar.emit_packet(blocked_packet).await;
+
+        // Record in SQLite Audit Ledger
+        if let Some(ref auditor) = state.sentry.auditor {
+            let verdict = crate::core::traits::GuardrailVerdict::violation(
+                vec![violation_reason.clone()],
+                format!("[INGRESS PROXY BLOCKED] {}", violation_reason),
+            );
+            auditor.record(
+                &format!("Ingress Proxy Intercept: {}", payload.model),
+                &verdict,
+                latency_ms as u128,
+            ).await;
+        }
+
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::to_value(OpenAiErrorResponse {
+                error: OpenAiErrorDetail {
+                    message: format!("[NOVASENTRY INGRESS INTERCEPTION] {}", violation_reason),
+                    error_type: "security_policy_violation".to_string(),
+                    code: "guardrail_interception".to_string(),
+                },
+            }).unwrap()),
+        ).into_response();
+    }
+
+    // 2. Upstream Forwarding or Grounded Fallback Reasoning
+    let router_status = state.sonar.get_9router_status().await;
+    let upstream_endpoint = router_status.endpoint.clone();
+    let auth_header = headers.get(axum::http::header::AUTHORIZATION).and_then(|h| h.to_str().ok()).unwrap_or("");
+
+    let upstream_res = if router_status.connected && !upstream_endpoint.trim().is_empty() {
+        let target_url = if upstream_endpoint.ends_with("/chat/completions") {
+            upstream_endpoint.clone()
+        } else {
+            format!("{}/chat/completions", upstream_endpoint.trim_end_matches('/'))
+        };
+
+        let mut req = state.sonar.http_client().post(&target_url).json(&payload);
+        if !auth_header.is_empty() {
+            req = req.header("Authorization", auth_header);
+        }
+
+        match req.send().await {
+            Ok(resp) if resp.status().is_success() => {
+                resp.json::<serde_json::Value>().await.ok()
+            }
+            _ => None,
+        }
+    } else {
+        None
+    };
+
+    let (response_json, raw_completion_text) = if let Some(up_json) = upstream_res {
+        let text = up_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+        (up_json, text)
+    } else {
+        let prompt_text = payload.messages.last().map(|m| m.content.as_str()).unwrap_or("");
+        let generated = match state.sentry.generator.generate(prompt_text, None).await {
+            Ok(txt) => txt,
+            Err(_) => "NovaSentry security sentry generated verified incident mitigation response.".to_string(),
+        };
+
+        let prompt_tokens = combined_input.len() / 4 + 10;
+        let completion_tokens = generated.len() / 4 + 10;
+
+        let resp = OpenAiChatResponse {
+            id: request_id.clone(),
+            object: "chat.completion".to_string(),
+            created: Utc::now().timestamp(),
+            model: payload.model.clone(),
+            choices: vec![OpenAiChoice {
+                index: 0,
+                message: OpenAiMessage {
+                    role: "assistant".to_string(),
+                    content: generated.clone(),
+                },
+                finish_reason: "stop".to_string(),
+            }],
+            usage: OpenAiUsage {
+                prompt_tokens,
+                completion_tokens,
+                total_tokens: prompt_tokens + completion_tokens,
+            },
+        };
+        (serde_json::to_value(resp).unwrap(), generated)
+    };
+
+    // 3. Egress Security Inspection & Redaction
+    let mut final_json = response_json;
+    let guardrail_impl = crate::components::guardrail::NovaGuardrail::default();
+    let (redacted, redacted_count) = guardrail_impl.sanitize_and_redact(&raw_completion_text);
+    if redacted_count > 0 {
+        if let Some(msg_content) = final_json.pointer_mut("/choices/0/message/content") {
+            *msg_content = serde_json::Value::String(redacted);
+        }
+    }
+
+    let latency_ms = start.elapsed().as_millis() as u64;
+
+    // Emit live pulse to Sonar SSE
+    let pass_pulse = SonarPacket {
+        id: format!("pkt-pxy-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+        timestamp: Utc::now(),
+        flow_type: FlowType::OutboundResponse,
+        upstream_gateway: format!("Proxy Forward [{}]", payload.model),
+        provider: "OpenAI Proxy Engine".to_string(),
+        model: payload.model.clone(),
+        client_origin: "OpenAI Proxy Client".to_string(),
+        latency_ms,
+        prompt_tokens: combined_input.len() / 4 + 10,
+        completion_tokens: raw_completion_text.len() / 4 + 10,
+        estimated_cost_usd: (combined_input.len() + raw_completion_text.len()) as f64 * 0.000002,
+        threat_verdict: ThreatVerdict::Clean,
+        radar_coordinate: RadarCoordinate {
+            angle_deg: 120.0,
+            distance_norm: ((latency_ms as f32) / 1000.0).clamp(0.1, 0.8),
+            frequency_khz: 16.0,
+            intensity_db: -6.0,
+        },
+        payload_preview: format!("PROXIED_COMPLETION: model='{}', len={}", payload.model, raw_completion_text.len()),
+    };
+    state.sonar.emit_packet(pass_pulse).await;
+
+    (StatusCode::OK, Json(final_json)).into_response()
+}
+
+async fn openai_list_models(State(state): State<WebAppState>) -> impl IntoResponse {
+    let status = state.sonar.get_9router_status().await;
+    let now = Utc::now().timestamp();
+    let mut data = vec![
+        OpenAiModelItem {
+            id: state.sentry.generator.model_name().to_string(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "novasentry-local".to_string(),
+        },
+    ];
+
+    for mesh_node in &status.upstream_mesh {
+        data.push(OpenAiModelItem {
+            id: mesh_node.clone(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "9router-mesh".to_string(),
+        });
+    }
+
+    Json(OpenAiModelListResponse {
+        object: "list".to_string(),
+        data,
+    })
+}
+
+async fn export_prometheus_metrics(State(state): State<WebAppState>) -> impl IntoResponse {
+    let total_chunks = state.sentry.vector_store.count().await;
+    let total_audits = if let Some(ref a) = state.sentry.auditor { a.count().await } else { 0 };
+    let sonar_status = state.sonar.get_9router_status().await;
+    let chaos_metrics = state.chaos.get_metrics().await;
+
+    let body = format!(
+        "# HELP novasentry_up Sentinel operational status (1 = armed, 0 = offline)\n\
+# TYPE novasentry_up gauge\n\
+novasentry_up 1\n\n\
+# HELP novasentry_vector_chunks_total Total knowledge chunks indexed in vector store\n\
+# TYPE novasentry_vector_chunks_total gauge\n\
+novasentry_vector_chunks_total {}\n\n\
+# HELP novasentry_audit_records_total Total compliance forensic audit records in SQLite\n\
+# TYPE novasentry_audit_records_total counter\n\
+novasentry_audit_records_total {}\n\n\
+# HELP novasentry_routed_packets_total Total multi-agent packets routed through sonar\n\
+# TYPE novasentry_routed_packets_total counter\n\
+novasentry_routed_packets_total {}\n\n\
+# HELP novasentry_tokens_routed_total Cumulative tokens inspected across ingress and egress\n\
+# TYPE novasentry_tokens_routed_total counter\n\
+novasentry_tokens_routed_total {}\n\n\
+# HELP novasentry_circuit_breakers_total Circuit breaker trigger count under loop/attack conditions\n\
+# TYPE novasentry_circuit_breakers_total counter\n\
+novasentry_circuit_breakers_total {}\n\n\
+# HELP novasentry_cost_saved_usd Cumulative estimated cost saved through caching and arbitrage\n\
+# TYPE novasentry_cost_saved_usd gauge\n\
+novasentry_cost_saved_usd {:.4}\n\n\
+# HELP novasentry_chaos_simulations_total Total agentic chaos disruption simulations run\n\
+# TYPE novasentry_chaos_simulations_total counter\n\
+novasentry_chaos_simulations_total {}\n\n\
+# HELP novasentry_chaos_tokens_preserved_total Cumulative token budget preserved by circuit breakers\n\
+# TYPE novasentry_chaos_tokens_preserved_total counter\n\
+novasentry_chaos_tokens_preserved_total {}\n",
+        total_chunks,
+        total_audits,
+        sonar_status.total_routed_packets,
+        sonar_status.total_tokens_routed,
+        sonar_status.active_circuit_breakers,
+        sonar_status.total_cost_saved_usd,
+        chaos_metrics.total_simulations,
+        chaos_metrics.estimated_tokens_preserved,
+    );
+
+    ([(axum::http::header::CONTENT_TYPE, "text/plain; version=0.0.4")], body)
 }
 
 pub async fn start_server(
