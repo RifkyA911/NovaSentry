@@ -44,7 +44,7 @@ impl Default for AppSettings {
     fn default() -> Self {
         Self {
             gemini_api_key: std::env::var("GEMINI_API_KEY").unwrap_or_default(),
-            gemini_default_model: std::env::var("GEMINI_DEFAULT_MODEL").unwrap_or_else(|_| "gemini-1.5-flash".to_string()),
+            gemini_default_model: std::env::var("GEMINI_DEFAULT_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".to_string()),
             router_upstream_endpoint: std::env::var("ROUTER_UPSTREAM_ENDPOINT").unwrap_or_else(|_| "http://127.0.0.1:20000/v1".to_string()),
             router_api_key: std::env::var("ROUTER_API_KEY").unwrap_or_default(),
             guardrail_strictness: "strict".to_string(),
@@ -225,6 +225,18 @@ pub struct TestGeminiResponse {
     pub model: String,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct SyncModelsRequest {
+    pub api_key: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SyncModelsResponse {
+    pub success: bool,
+    pub models: Vec<String>,
+    pub message: String,
+}
+
 
 // ==========================================
 // OPENAI-COMPATIBLE PROXY & PROMETHEUS TYPES
@@ -331,6 +343,7 @@ pub fn create_router(state: WebAppState) -> Router {
         // System Settings & API Key Management
         .route("/api/settings", get(get_settings_handler).post(update_settings_handler))
         .route("/api/settings/test-gemini", post(test_gemini_handler))
+        .route("/api/settings/gemini/sync-models", post(sync_gemini_models_handler))
         // Prometheus Metrics Exporter (SIEM / Grafana / Datadog)
         .route("/metrics", get(export_prometheus_metrics))
         .layer(CorsLayer::permissive())
@@ -1102,22 +1115,34 @@ async fn openai_list_models(State(state): State<WebAppState>) -> impl IntoRespon
             owned_by: "novasentry-local".to_string(),
         },
         OpenAiModelItem {
-            id: "gemini-1.5-flash".to_string(),
+            id: "gemini-2.5-flash".to_string(),
             object: "model".to_string(),
             created: now,
-            owned_by: "google-gemini-free".to_string(),
+            owned_by: "google-gemini-cloud".to_string(),
+        },
+        OpenAiModelItem {
+            id: "gemini-2.5-pro".to_string(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "google-gemini-cloud".to_string(),
         },
         OpenAiModelItem {
             id: "gemini-2.0-flash".to_string(),
             object: "model".to_string(),
             created: now,
-            owned_by: "google-gemini-free".to_string(),
+            owned_by: "google-gemini-cloud".to_string(),
         },
         OpenAiModelItem {
-            id: "gemini-1.5-pro".to_string(),
+            id: "gemini-3.5-flash".to_string(),
             object: "model".to_string(),
             created: now,
-            owned_by: "google-gemini-free".to_string(),
+            owned_by: "google-gemini-cloud".to_string(),
+        },
+        OpenAiModelItem {
+            id: "gemini-3.1-pro-preview".to_string(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "google-gemini-cloud".to_string(),
         },
     ];
 
@@ -1289,7 +1314,7 @@ async fn test_gemini_handler(
         if !s.gemini_default_model.is_empty() {
             s.gemini_default_model.clone()
         } else {
-            "gemini-1.5-flash".to_string()
+            "gemini-2.5-flash".to_string()
         }
     });
 
@@ -1319,6 +1344,7 @@ async fn test_gemini_handler(
         .http_client()
         .post(url)
         .header("Authorization", format!("Bearer {}", key.trim()))
+        .header("x-goog-api-key", key.trim())
         .json(&body)
         .send()
         .await
@@ -1337,12 +1363,38 @@ async fn test_gemini_handler(
                 )
             } else {
                 let err_text = resp.text().await.unwrap_or_default();
+                // Query live available models to guide the user if model not found
+                let mut hint = String::new();
+                let models_probe_url = format!("https://generativelanguage.googleapis.com/v1beta/models?key={}", key.trim());
+                if let Ok(m_resp) = state.sonar.http_client().get(&models_probe_url).header("x-goog-api-key", key.trim()).send().await {
+                    if let Ok(m_json) = m_resp.json::<serde_json::Value>().await {
+                        if let Some(m_arr) = m_json.get("models").and_then(|m| m.as_array()) {
+                            let available: Vec<String> = m_arr
+                                .iter()
+                                .filter_map(|m| {
+                                    let name = m.get("name")?.as_str()?;
+                                    let clean = name.strip_prefix("models/").unwrap_or(name);
+                                    let methods = m.get("supportedGenerationMethods")?.as_array()?;
+                                    if methods.iter().any(|v| v.as_str() == Some("generateContent")) {
+                                        Some(clean.to_string())
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .collect();
+                            if !available.is_empty() {
+                                hint = format!(" Live supported models for your API key: {}", available.join(", "));
+                            }
+                        }
+                    }
+                }
+
                 (
                     StatusCode::OK,
                     Json(TestGeminiResponse {
                         success: false,
                         status: status.as_u16(),
-                        message: format!("Google Gemini returned HTTP {}: {}", status, err_text),
+                        message: format!("Google Gemini returned HTTP {}: {}.{}", status, err_text, hint),
                         model,
                     }),
                 )
@@ -1355,6 +1407,119 @@ async fn test_gemini_handler(
                 status: 502,
                 message: format!("Failed to reach Google Generative AI gateway: {}", e),
                 model,
+            }),
+        ),
+    }
+}
+
+async fn sync_gemini_models_handler(
+    State(state): State<WebAppState>,
+    Json(payload): Json<SyncModelsRequest>,
+) -> impl IntoResponse {
+    let s = state.settings.read().await;
+    let key = if let Some(ref k) = payload.api_key {
+        let trimmed = k.trim();
+        if !trimmed.is_empty() { trimmed.to_string() } else { s.gemini_api_key.clone() }
+    } else {
+        s.gemini_api_key.clone()
+    };
+
+    if key.trim().is_empty() {
+        return (
+            StatusCode::OK,
+            Json(SyncModelsResponse {
+                success: false,
+                models: vec![
+                    "gemini-2.5-flash".to_string(),
+                    "gemini-2.5-pro".to_string(),
+                    "gemini-2.0-flash".to_string(),
+                    "gemini-3.5-flash".to_string(),
+                    "gemini-3.1-pro-preview".to_string(),
+                ],
+                message: "No Gemini API key provided. Showing modern standard catalog.".to_string(),
+            }),
+        );
+    }
+
+    let url = format!("https://generativelanguage.googleapis.com/v1beta/models?key={}", key.trim());
+    match state.sonar.http_client().get(&url).header("x-goog-api-key", key.trim()).send().await {
+        Ok(resp) if resp.status().is_success() => {
+            if let Ok(json) = resp.json::<serde_json::Value>().await {
+                if let Some(arr) = json.get("models").and_then(|m| m.as_array()) {
+                    let mut models: Vec<String> = arr
+                        .iter()
+                        .filter_map(|m| {
+                            let name = m.get("name")?.as_str()?;
+                            let clean = name.strip_prefix("models/").unwrap_or(name);
+                            let methods = m.get("supportedGenerationMethods")?.as_array()?;
+                            if methods.iter().any(|v| v.as_str() == Some("generateContent")) {
+                                Some(clean.to_string())
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+
+                    // Prioritize modern flagship models at the top
+                    models.sort_by(|a, b| {
+                        let score = |s: &str| {
+                            if s.contains("2.5-flash") { 0 }
+                            else if s.contains("2.5-pro") { 1 }
+                            else if s.contains("2.0-flash") { 2 }
+                            else if s.contains("3.5-flash") { 3 }
+                            else if s.contains("3.1-pro") { 4 }
+                            else { 10 }
+                        };
+                        score(a).cmp(&score(b))
+                    });
+
+                    (
+                        StatusCode::OK,
+                        Json(SyncModelsResponse {
+                            success: true,
+                            models: models.clone(),
+                            message: format!("Successfully synced {} live models from Google AI Studio.", models.len()),
+                        }),
+                    )
+                } else {
+                    (
+                        StatusCode::OK,
+                        Json(SyncModelsResponse {
+                            success: false,
+                            models: vec!["gemini-2.5-flash".to_string(), "gemini-2.5-pro".to_string(), "gemini-2.0-flash".to_string()],
+                            message: "Failed to parse models array from Google response.".to_string(),
+                        }),
+                    )
+                }
+            } else {
+                (
+                    StatusCode::OK,
+                    Json(SyncModelsResponse {
+                        success: false,
+                        models: vec!["gemini-2.5-flash".to_string(), "gemini-2.5-pro".to_string(), "gemini-2.0-flash".to_string()],
+                        message: "Invalid JSON response from Google Generative AI.".to_string(),
+                    }),
+                )
+            }
+        }
+        Ok(resp) => {
+            let status = resp.status();
+            let err_text = resp.text().await.unwrap_or_default();
+            (
+                StatusCode::OK,
+                Json(SyncModelsResponse {
+                    success: false,
+                    models: vec!["gemini-2.5-flash".to_string(), "gemini-2.5-pro".to_string(), "gemini-2.0-flash".to_string()],
+                    message: format!("Google returned HTTP {}: {}", status, err_text),
+                }),
+            )
+        }
+        Err(e) => (
+            StatusCode::OK,
+            Json(SyncModelsResponse {
+                success: false,
+                models: vec!["gemini-2.5-flash".to_string(), "gemini-2.5-pro".to_string(), "gemini-2.0-flash".to_string()],
+                message: format!("Failed to reach Google Generative AI: {}", e),
             }),
         ),
     }

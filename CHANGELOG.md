@@ -7,13 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.1] - 2026-10-08
+
+### Added
+- **Live Google Gemini Model Discovery via `ModelService.ListModels` (`POST /api/settings/gemini/sync-models`)**:
+  - Dynamically queries `https://generativelanguage.googleapis.com/v1beta/models?key={}` to retrieve all active models supporting `generateContent` for the user's specific Google AI Studio account.
+  - Interactive **Sync Models** button in the Settings view dynamically populates the model selection dropdown with live models, making NovaSentry future-proof against model deprecations.
+  - Added modern production models to `GET /v1/models`: `gemini-2.5-flash` (flagship high-speed & reasoning), `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-3.5-flash`, and `gemini-3.1-pro-preview`.
+- **Dual Authentication Headers**:
+  - Sends both `x-goog-api-key` and `Authorization: Bearer <KEY>` to Google Generative AI endpoints for maximum provider compatibility.
+- **Enhanced Connection Diagnostic Diagnostics**:
+  - When connection test fails, NovaSentry automatically queries `ModelService.ListModels` and returns actionable recommendations showing exact active model names available to the user.
+
+### Changed
+- **Default Upstream Model Upgraded to `gemini-2.5-flash`**:
+  - Replaced deprecated `gemini-1.5-flash` (disallowed/404 in Google v1main API) with current production workhorse `gemini-2.5-flash`.
+  - Updated all defaults in `AppSettings`, `.env.example`, documentation, and component tests.
+
+---
+
 ## [0.2.0] - 2026-10-08
 
 ### Added
 - **Dedicated System Settings & API Keys Dashboard View (`#view-settings`)**:
   - Full-featured configuration management interface accessible directly in the sidebar navigation.
   - Interactive Google Gemini Free API Key input with password show/hide eye toggle, key masking, and real-time validation.
-  - Model selection dropdown supporting `gemini-1.5-flash` (Recommended Free Tier), `gemini-2.0-flash`, and `gemini-1.5-pro`.
+  - Model selection dropdown supporting `gemini-2.5-flash` (Recommended Free Tier), `gemini-2.5-pro`, and `gemini-2.0-flash`.
   - Upstream 9Router Gateway Endpoint URL and Bearer token configuration with live tunnel probing.
   - Perimeter guardrail strictness selector (`Strict`, `Balanced`, `Permissive`) and custom Canary Honeytoken string input.
   - Egress credential and secret redaction toggle.

@@ -99,11 +99,12 @@ flowchart LR
 ### 5. 🛡️ Google Gemini Free Tier Reverse Proxy & Quota Shield
 - **Zero-Latency Ingress Shielding**: Intercepts prompt injections, jailbreaks, and delimiter breakouts in **<0.1ms** local Rust memory *before* calling Google Generative AI, preventing adversarial actors from consuming your Free Tier quota (15 RPM / 1,500 RPD).
 - **Post-Call Egress Scrubbing**: Scans upstream Gemini output and automatically redacts exposed credentials, API keys, Bearer JWTs, and PII before delivering to downstream apps.
-- **Drop-In OpenAI Compatibility**: Client applications simply point `base_url="http://localhost:3000/v1"` with models `gemini-1.5-flash`, `gemini-2.0-flash`, or `gemini-1.5-pro`.
+- **Drop-In OpenAI Compatibility**: Client applications simply point `base_url="http://localhost:3000/v1"` with models `gemini-2.5-flash`, `gemini-2.5-pro`, or `gemini-2.0-flash`.
+- **Live Model Discovery**: Dynamically probes active models via Google's `ModelService.ListModels` API (`POST /api/settings/gemini/sync-models`) with 1-click sync in the Settings UI.
 
-### 6. ⚙️ Dedicated System Settings & Live Connection Testing
+### 6. ⚙️ Dedicated System Settings, Live Probing & Model Discovery
 - Dedicated Settings & Keys dashboard view (`#view-settings`) allows configuring `GEMINI_API_KEY`, 9Router upstream URLs, honeytokens, and guardrail strictness in real time.
-- Integrated **"Test Gemini Connection"** tool (`POST /api/settings/test-gemini`) sending live probes directly to Google Generative AI to verify key validity.
+- Integrated **"Sync Models"** & **"Test Gemini Connection"** tools sending live probes directly to Google Generative AI to verify key validity and discover enabled models.
 - Thread-safe runtime state synced automatically to local `.env` without requiring server daemon restart.
 
 ### 7. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity

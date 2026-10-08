@@ -366,7 +366,7 @@ async fn test_settings_view_and_gemini_configuration() {
     // Verify initial settings default
     {
         let settings = state.settings.read().await;
-        assert_eq!(settings.gemini_default_model, "gemini-1.5-flash");
+        assert_eq!(settings.gemini_default_model, "gemini-2.5-flash");
         assert!(settings.redaction_enabled);
     }
 
