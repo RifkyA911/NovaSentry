@@ -846,31 +846,62 @@ async fn openai_chat_completions_proxy(
 
     // 2. Upstream Forwarding or Grounded Fallback Reasoning
     let router_status = state.sonar.get_9router_status().await;
-    let upstream_endpoint = router_status.endpoint.clone();
     let auth_header = headers.get(axum::http::header::AUTHORIZATION).and_then(|h| h.to_str().ok()).unwrap_or("");
+    let is_gemini_model = payload.model.to_lowercase().starts_with("gemini");
+    let gemini_key_env = std::env::var("GEMINI_API_KEY").ok();
 
-    let upstream_res = if router_status.connected && !upstream_endpoint.trim().is_empty() {
-        let target_url = if upstream_endpoint.ends_with("/chat/completions") {
-            upstream_endpoint.clone()
+    let (upstream_url, upstream_auth) = if is_gemini_model {
+        let key = if !auth_header.is_empty() && !auth_header.contains("sentry-token") && !auth_header.contains("sentry123") {
+            auth_header.strip_prefix("Bearer ").unwrap_or(auth_header).trim().to_string()
+        } else if let Some(ref k) = gemini_key_env {
+            k.trim().to_string()
         } else {
-            format!("{}/chat/completions", upstream_endpoint.trim_end_matches('/'))
+            String::new()
         };
 
+        let url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions".to_string();
+        let auth = if !key.is_empty() { format!("Bearer {}", key) } else { String::new() };
+        (Some(url), Some(auth))
+    } else if router_status.connected && !router_status.endpoint.trim().is_empty() {
+        let ep = router_status.endpoint.trim_end_matches('/');
+        let url = if ep.ends_with("/chat/completions") {
+            ep.to_string()
+        } else {
+            format!("{}/chat/completions", ep)
+        };
+        (Some(url), if !auth_header.is_empty() { Some(auth_header.to_string()) } else { None })
+    } else {
+        (None, None)
+    };
+
+    let upstream_res = if let Some(target_url) = upstream_url {
         let mut req = state.sonar.http_client().post(&target_url).json(&payload);
-        if !auth_header.is_empty() {
-            req = req.header("Authorization", auth_header);
+        if let Some(ref auth) = upstream_auth {
+            if !auth.is_empty() {
+                req = req.header("Authorization", auth);
+            }
         }
 
         match req.send().await {
             Ok(resp) if resp.status().is_success() => {
                 resp.json::<serde_json::Value>().await.ok()
             }
-            _ => None,
+            Ok(resp) => {
+                let status_code = resp.status();
+                let err_text = resp.text().await.unwrap_or_default();
+                tracing::warn!("Upstream gateway returned HTTP {}: {}", status_code, err_text);
+                None
+            }
+            Err(err) => {
+                tracing::warn!("Failed to reach upstream gateway: {}", err);
+                None
+            }
         }
     } else {
         None
     };
 
+    let is_upstream_success = upstream_res.is_some();
     let (response_json, raw_completion_text) = if let Some(up_json) = upstream_res {
         let text = up_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
         (up_json, text)
@@ -919,18 +950,28 @@ async fn openai_chat_completions_proxy(
     let latency_ms = start.elapsed().as_millis() as u64;
 
     // Emit live pulse to Sonar SSE
+    let (gw_label, prov_label, cost) = if is_gemini_model && is_upstream_success {
+        (format!("Google Gemini Cloud [{}]", payload.model), "Google Gemini API (Generative Language)".to_string(), 0.0)
+    } else if is_upstream_success {
+        (format!("9Router Mesh [{}]", payload.model), "9Router Gateway Mesh".to_string(), (combined_input.len() + raw_completion_text.len()) as f64 * 0.000002)
+    } else if is_gemini_model {
+        (format!("Gemini Fallback Reasoner [{}]", payload.model), "NovaSentry Resilient Engine".to_string(), 0.0)
+    } else {
+        (format!("Local Guarded Reasoner [{}]", payload.model), "NovaSentry Local Engine".to_string(), 0.0)
+    };
+
     let pass_pulse = SonarPacket {
         id: format!("pkt-pxy-{}", &uuid::Uuid::new_v4().to_string()[..8]),
         timestamp: Utc::now(),
         flow_type: FlowType::OutboundResponse,
-        upstream_gateway: format!("Proxy Forward [{}]", payload.model),
-        provider: "OpenAI Proxy Engine".to_string(),
+        upstream_gateway: gw_label,
+        provider: prov_label,
         model: payload.model.clone(),
         client_origin: "OpenAI Proxy Client".to_string(),
         latency_ms,
         prompt_tokens: combined_input.len() / 4 + 10,
         completion_tokens: raw_completion_text.len() / 4 + 10,
-        estimated_cost_usd: (combined_input.len() + raw_completion_text.len()) as f64 * 0.000002,
+        estimated_cost_usd: cost,
         threat_verdict: ThreatVerdict::Clean,
         radar_coordinate: RadarCoordinate {
             angle_deg: 120.0,
@@ -954,6 +995,24 @@ async fn openai_list_models(State(state): State<WebAppState>) -> impl IntoRespon
             object: "model".to_string(),
             created: now,
             owned_by: "novasentry-local".to_string(),
+        },
+        OpenAiModelItem {
+            id: "gemini-1.5-flash".to_string(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "google-gemini-free".to_string(),
+        },
+        OpenAiModelItem {
+            id: "gemini-2.0-flash".to_string(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "google-gemini-free".to_string(),
+        },
+        OpenAiModelItem {
+            id: "gemini-1.5-pro".to_string(),
+            object: "model".to_string(),
+            created: now,
+            owned_by: "google-gemini-free".to_string(),
         },
     ];
 

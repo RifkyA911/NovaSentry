@@ -562,14 +562,18 @@
                   <span>http://localhost:3000/v1</span>
                   <span class="text-[9px] text-slate-500 font-sans">OpenAI Compliant</span>
                 </div>
-                <div class="flex items-center gap-2">
-                  <button onclick="testProxyClean()" id="btn-proxy-clean" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition flex items-center justify-center gap-1">
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button onclick="testProxyClean()" id="btn-proxy-clean" class="py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition flex items-center justify-center gap-1">
                     <i data-lucide="play" class="w-3 h-3"></i>
-                    <span>Test Clean Req</span>
+                    <span>Clean Req</span>
                   </button>
-                  <button onclick="testProxyAttack()" id="btn-proxy-attack" class="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] transition flex items-center justify-center gap-1">
+                  <button onclick="testProxyAttack()" id="btn-proxy-attack" class="py-2 px-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] transition flex items-center justify-center gap-1">
                     <i data-lucide="shield-alert" class="w-3 h-3"></i>
-                    <span>Test Attack Req</span>
+                    <span>Attack Req</span>
+                  </button>
+                  <button onclick="testProxyGemini()" id="btn-proxy-gemini" class="py-2 px-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-[10px] transition flex items-center justify-center gap-1">
+                    <i data-lucide="sparkles" class="w-3 h-3"></i>
+                    <span>Gemini Free</span>
                   </button>
                 </div>
                 <div id="proxy-test-result" class="hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono"></div>
@@ -3166,6 +3170,47 @@
             <div class="text-rose-500 font-bold mb-1">[HTTP ${res.status} BLOCKED] Ingress Attack Quarantined</div>
             <div class="text-slate-700 dark:text-slate-300 font-semibold">${data.error ? data.error.message : 'Blocked'}</div>
             <div class="text-[9px] text-slate-400 mt-1 font-mono">Type: ${data.error ? data.error.type : 'security_violation'} | Code: ${data.error ? data.error.code : 'guardrail_interception'}</div>
+          `;
+        }
+      } catch (err) {
+        if (resBox) resBox.innerHTML = `<span class="text-rose-500 font-bold">Error:</span> ${err.message}`;
+      } finally {
+        if (btn) btn.disabled = false;
+        refreshStats();
+        refreshAudit();
+      }
+    }
+
+    async function testProxyGemini() {
+      const btn = document.getElementById('btn-proxy-gemini');
+      const resBox = document.getElementById('proxy-test-result');
+      if (btn) btn.disabled = true;
+      if (resBox) {
+        resBox.classList.remove('hidden');
+        resBox.innerHTML = '<span class="text-sky-400">Testing model: gemini-1.5-flash via NovaSentry reverse proxy...</span>';
+      }
+
+      try {
+        const res = await fetch('/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'gemini-1.5-flash',
+            messages: [{ role: 'user', content: 'Explain in one short sentence how a security reverse proxy protects an LLM.' }]
+          })
+        });
+        const data = await res.json();
+        if (resBox) {
+          const content = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data);
+          resBox.innerHTML = `
+            <div class="text-sky-500 font-bold mb-1">[HTTP ${res.status}] Gemini Free Route Verified</div>
+            <div class="text-slate-600 dark:text-slate-300">Model: <b>${data.model}</b> | Tokens: <b>${data.usage ? data.usage.total_tokens : 'N/A'}</b></div>
+            <div class="text-slate-700 dark:text-slate-200 mt-1 p-2 rounded bg-slate-200 dark:bg-slate-800 text-[10px] max-h-24 overflow-y-auto">
+              ${content}
+            </div>
+            <div class="text-[9px] text-slate-400 mt-1 font-mono">
+              Upstream: Google Gemini Free API (OpenAI spec) | Guardrail: Ingress Clean + Egress Inspected
+            </div>
           `;
         }
       } catch (err) {
