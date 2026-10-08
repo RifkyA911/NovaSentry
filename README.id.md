@@ -203,8 +203,11 @@ Menguji seluruh 9 unit test dan integrasi (vektor kosinus semantik, deteksi inje
 | `GET` | `/api/chaos/experiments` | Publik | Mendapatkan katalog 6 skenario eksperimen chaos multi-agen |
 | `POST` | `/api/chaos/run` | Publik | Menyuntikkan gangguan chaos dan menjalankan protokol pemulihan mandiri |
 | `GET` | `/api/chaos/metrics` | Publik | Mengambil telemetri ketahanan, penghematan token, dan status circuit breaker |
-| `POST` | `/v1/chat/completions` | Publik / Proxy | **Reverse Proxy Kompatibel OpenAI**: Memeriksa prompt ingress, memblokir injection, menyensor PII/rahasia egress, dan mem-proxy ke hulu |
-| `GET` | `/v1/models` | Publik / Proxy | **Endpoint Model Kompatibel OpenAI**: Menampilkan daftar model lokal dan node mesh 9router |
+| `GET` | `/api/settings` | Publik / Petugas | **Pengaturan Sistem**: Mengambil status kunci API Gemini, model default, endpoint 9Router, dan sensitivitas guardrail |
+| `POST` | `/api/settings` | Petugas | **Simpan Pengaturan**: Memperbarui konfigurasi runtime secara thread-safe dan menyinkronkan ke `.env` |
+| `POST` | `/api/settings/test-gemini` | Publik / Petugas | **Uji Koneksi Gemini**: Menguji langsung validitas kunci API ke Google Generative AI secara real-time |
+| `POST` | `/v1/chat/completions` | Publik / Proxy | **Reverse Proxy Kompatibel OpenAI**: Memeriksa prompt ingress, memblokir injection sebelum kena kuota Gemini, menyensor rahasia egress, dan mem-proxy ke hulu |
+| `GET` | `/v1/models` | Publik / Proxy | **Endpoint Model Kompatibel OpenAI**: Menampilkan daftar model lokal, model gratis Google Gemini, dan node mesh 9router |
 | `GET` | `/metrics` | Publik / SIEM | **Exporter Metrik Standar Prometheus**: Metrik telemetri yang dapat di-scrape oleh Grafana, Prometheus, dan Datadog |
 
 ---
@@ -215,7 +218,8 @@ Untuk standar keteknikan yang transparan, modul NovaSentry dikelompokkan ke dala
 
 | Tingkatan | Komponen | Status Implementasi | Deskripsi & Nilai Teknis |
 |---|---|---|---|
-| **🟢 STABLE** | `OpenAI Reverse Proxy (/v1)` | **Siap Produksi** | Gateway kompatibel OpenAI langsung pakai (`/v1/chat/completions`) untuk n8n, Hermes, Cursor, dan agen Python dengan intersepsi ancaman inline. |
+| **🟢 STABLE** | `Pengaturan Sistem & Kunci API (/api/settings)` | **Siap Produksi** | Halaman konfigurasi runtime untuk kunci Google Gemini, tunnel 9Router, honeytoken, dan pengujian koneksi langsung tanpa restart daemon. |
+| **🟢 STABLE** | `OpenAI Reverse Proxy (/v1)` | **Siap Produksi** | Gateway kompatibel OpenAI langsung pakai (`/v1/chat/completions`) untuk Google Gemini Free tier, n8n, Hermes, Cursor, dan agen Python dengan perlindungan kuota dari prompt injection. |
 | **🟢 STABLE** | `Prometheus Exporter (/metrics)` | **Siap Produksi** | Format eksposisi standar Prometheus untuk saluran observabilitas Grafana, Datadog, dan SIEM. |
 | **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Siap Produksi** | Filter batas teks mendalam untuk mencegah prompt injection, delimiter breakout, kebocoran honeytoken, serta penyensoran PII/rahasia otomatis. |
 | **🟢 STABLE** | `SQLite Auth & Sessions` | **Siap Produksi** | Basis data SQLite lokal (`rusqlite`) dengan hashing kata sandi SHA-256 + garam acak serta manajemen sesi token. |

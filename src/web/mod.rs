@@ -29,12 +29,55 @@ pub mod auth;
 pub const INDEX_HTML: &str = include_str!("assets/index.html");
 pub const LOGO_SVG: &str = include_str!("assets/logo.svg");
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppSettings {
+    pub gemini_api_key: String,
+    pub gemini_default_model: String,
+    pub router_upstream_endpoint: String,
+    pub router_api_key: String,
+    pub guardrail_strictness: String,
+    pub canary_honeytoken: String,
+    pub redaction_enabled: bool,
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            gemini_api_key: std::env::var("GEMINI_API_KEY").unwrap_or_default(),
+            gemini_default_model: std::env::var("GEMINI_DEFAULT_MODEL").unwrap_or_else(|_| "gemini-1.5-flash".to_string()),
+            router_upstream_endpoint: std::env::var("ROUTER_UPSTREAM_ENDPOINT").unwrap_or_else(|_| "http://127.0.0.1:20000/v1".to_string()),
+            router_api_key: std::env::var("ROUTER_API_KEY").unwrap_or_default(),
+            guardrail_strictness: "strict".to_string(),
+            canary_honeytoken: "CANARY_TOKEN_99_ALPHA".to_string(),
+            redaction_enabled: true,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct WebAppState {
     pub sentry: Arc<SentryEngine>,
     pub auth: auth::AuthDb,
     pub chaos: Arc<crate::components::chaos::ChaosEngine>,
     pub sonar: Arc<SonarEngine>,
+    pub settings: Arc<tokio::sync::RwLock<AppSettings>>,
+}
+
+impl WebAppState {
+    pub fn new(
+        sentry: Arc<SentryEngine>,
+        auth: auth::AuthDb,
+        chaos: Arc<crate::components::chaos::ChaosEngine>,
+        sonar: Arc<SonarEngine>,
+    ) -> Self {
+        Self {
+            sentry,
+            auth,
+            chaos,
+            sonar,
+            settings: Arc::new(tokio::sync::RwLock::new(AppSettings::default())),
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -142,6 +185,48 @@ pub struct SonarSimulateRequest {
 }
 
 // ==========================================
+// SYSTEM SETTINGS & GATEWAY CONFIGURATION TYPES
+// ==========================================
+
+#[derive(Debug, Clone, Serialize)]
+pub struct SettingsViewResponse {
+    pub gemini_api_key_configured: bool,
+    pub gemini_key_masked: String,
+    pub gemini_default_model: String,
+    pub router_upstream_endpoint: String,
+    pub router_api_key_configured: bool,
+    pub guardrail_strictness: String,
+    pub canary_honeytoken: String,
+    pub redaction_enabled: bool,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct UpdateSettingsRequest {
+    pub gemini_api_key: Option<String>,
+    pub gemini_default_model: Option<String>,
+    pub router_upstream_endpoint: Option<String>,
+    pub router_api_key: Option<String>,
+    pub guardrail_strictness: Option<String>,
+    pub canary_honeytoken: Option<String>,
+    pub redaction_enabled: Option<bool>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct TestGeminiRequest {
+    pub api_key: Option<String>,
+    pub model: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TestGeminiResponse {
+    pub success: bool,
+    pub status: u16,
+    pub message: String,
+    pub model: String,
+}
+
+
+// ==========================================
 // OPENAI-COMPATIBLE PROXY & PROMETHEUS TYPES
 // ==========================================
 
@@ -243,6 +328,9 @@ pub fn create_router(state: WebAppState) -> Router {
         // OpenAI-Compatible AI Security Reverse Proxy (n8n, Hermes, Cursor, Python Agents)
         .route("/v1/chat/completions", post(openai_chat_completions_proxy))
         .route("/v1/models", get(openai_list_models))
+        // System Settings & API Key Management
+        .route("/api/settings", get(get_settings_handler).post(update_settings_handler))
+        .route("/api/settings/test-gemini", post(test_gemini_handler))
         // Prometheus Metrics Exporter (SIEM / Grafana / Datadog)
         .route("/metrics", get(export_prometheus_metrics))
         .layer(CorsLayer::permissive())
@@ -848,12 +936,14 @@ async fn openai_chat_completions_proxy(
     let router_status = state.sonar.get_9router_status().await;
     let auth_header = headers.get(axum::http::header::AUTHORIZATION).and_then(|h| h.to_str().ok()).unwrap_or("");
     let is_gemini_model = payload.model.to_lowercase().starts_with("gemini");
-    let gemini_key_env = std::env::var("GEMINI_API_KEY").ok();
+    let settings = state.settings.read().await;
 
     let (upstream_url, upstream_auth) = if is_gemini_model {
         let key = if !auth_header.is_empty() && !auth_header.contains("sentry-token") && !auth_header.contains("sentry123") {
             auth_header.strip_prefix("Bearer ").unwrap_or(auth_header).trim().to_string()
-        } else if let Some(ref k) = gemini_key_env {
+        } else if !settings.gemini_api_key.trim().is_empty() {
+            settings.gemini_api_key.trim().to_string()
+        } else if let Ok(k) = std::env::var("GEMINI_API_KEY") {
             k.trim().to_string()
         } else {
             String::new()
@@ -870,6 +960,21 @@ async fn openai_chat_completions_proxy(
             format!("{}/chat/completions", ep)
         };
         (Some(url), if !auth_header.is_empty() { Some(auth_header.to_string()) } else { None })
+    } else if !settings.router_upstream_endpoint.trim().is_empty() {
+        let ep = settings.router_upstream_endpoint.trim_end_matches('/');
+        let url = if ep.ends_with("/chat/completions") {
+            ep.to_string()
+        } else {
+            format!("{}/chat/completions", ep)
+        };
+        let auth = if !auth_header.is_empty() {
+            Some(auth_header.to_string())
+        } else if !settings.router_api_key.trim().is_empty() {
+            Some(format!("Bearer {}", settings.router_api_key.trim()))
+        } else {
+            None
+        };
+        (Some(url), auth)
     } else {
         (None, None)
     };
@@ -1031,6 +1136,230 @@ async fn openai_list_models(State(state): State<WebAppState>) -> impl IntoRespon
     })
 }
 
+// ==========================================
+// SYSTEM SETTINGS & GATEWAY HANDLERS
+// ==========================================
+
+async fn get_settings_handler(State(state): State<WebAppState>) -> impl IntoResponse {
+    let s = state.settings.read().await;
+    let key = s.gemini_api_key.trim();
+    let masked = if key.len() > 8 {
+        format!("{}...{}", &key[..6], &key[key.len() - 4..])
+    } else if !key.is_empty() {
+        "******".to_string()
+    } else {
+        String::new()
+    };
+
+    Json(SettingsViewResponse {
+        gemini_api_key_configured: !key.is_empty(),
+        gemini_key_masked: masked,
+        gemini_default_model: s.gemini_default_model.clone(),
+        router_upstream_endpoint: s.router_upstream_endpoint.clone(),
+        router_api_key_configured: !s.router_api_key.trim().is_empty(),
+        guardrail_strictness: s.guardrail_strictness.clone(),
+        canary_honeytoken: s.canary_honeytoken.clone(),
+        redaction_enabled: s.redaction_enabled,
+    })
+}
+
+async fn update_settings_handler(
+    State(state): State<WebAppState>,
+    Json(payload): Json<UpdateSettingsRequest>,
+) -> impl IntoResponse {
+    let mut s = state.settings.write().await;
+
+    if let Some(ref key) = payload.gemini_api_key {
+        let trimmed = key.trim();
+        if !trimmed.is_empty() {
+            s.gemini_api_key = trimmed.to_string();
+            std::env::set_var("GEMINI_API_KEY", trimmed);
+        }
+    }
+
+    if let Some(ref model) = payload.gemini_default_model {
+        let trimmed = model.trim();
+        if !trimmed.is_empty() {
+            s.gemini_default_model = trimmed.to_string();
+            std::env::set_var("GEMINI_DEFAULT_MODEL", trimmed);
+        }
+    }
+
+    if let Some(ref ep) = payload.router_upstream_endpoint {
+        let trimmed = ep.trim();
+        if !trimmed.is_empty() {
+            s.router_upstream_endpoint = trimmed.to_string();
+            std::env::set_var("ROUTER_UPSTREAM_ENDPOINT", trimmed);
+        }
+    }
+
+    if let Some(ref key) = payload.router_api_key {
+        let trimmed = key.trim();
+        if !trimmed.is_empty() {
+            s.router_api_key = trimmed.to_string();
+            std::env::set_var("ROUTER_API_KEY", trimmed);
+        }
+    }
+
+    if let Some(ref strict) = payload.guardrail_strictness {
+        s.guardrail_strictness = strict.clone();
+    }
+
+    if let Some(ref token) = payload.canary_honeytoken {
+        s.canary_honeytoken = token.clone();
+    }
+
+    if let Some(redact) = payload.redaction_enabled {
+        s.redaction_enabled = redact;
+    }
+
+    // Persist to .env file if it exists
+    if let Ok(content) = std::fs::read_to_string(".env") {
+        let mut new_lines = Vec::new();
+        let mut found_gemini = false;
+        let mut found_model = false;
+        let mut found_router = false;
+
+        for line in content.lines() {
+            if line.starts_with("GEMINI_API_KEY=") {
+                new_lines.push(format!("GEMINI_API_KEY={}", s.gemini_api_key));
+                found_gemini = true;
+            } else if line.starts_with("GEMINI_DEFAULT_MODEL=") {
+                new_lines.push(format!("GEMINI_DEFAULT_MODEL={}", s.gemini_default_model));
+                found_model = true;
+            } else if line.starts_with("ROUTER_UPSTREAM_ENDPOINT=") {
+                new_lines.push(format!("ROUTER_UPSTREAM_ENDPOINT={}", s.router_upstream_endpoint));
+                found_router = true;
+            } else {
+                new_lines.push(line.to_string());
+            }
+        }
+
+        if !found_gemini && !s.gemini_api_key.is_empty() {
+            new_lines.push(format!("GEMINI_API_KEY={}", s.gemini_api_key));
+        }
+        if !found_model {
+            new_lines.push(format!("GEMINI_DEFAULT_MODEL={}", s.gemini_default_model));
+        }
+        if !found_router {
+            new_lines.push(format!("ROUTER_UPSTREAM_ENDPOINT={}", s.router_upstream_endpoint));
+        }
+
+        let _ = std::fs::write(".env", new_lines.join("\n"));
+    }
+
+    // Record forensic audit entry
+    if let Some(ref auditor) = state.sentry.auditor {
+        let audit_verdict = crate::core::traits::GuardrailVerdict {
+            passed: true,
+            risk_score: 0.0,
+            flags: vec!["CONFIG_UPDATE".to_string(), "SETTINGS_APPLIED".to_string()],
+            message: format!("Runtime API keys and system settings updated. Default Gemini Model: {}", s.gemini_default_model),
+        };
+        auditor.record(
+            "System Administration: Updated Gateway API Keys & Settings",
+            &audit_verdict,
+            5,
+        ).await;
+    }
+
+    Json(serde_json::json!({
+        "success": true,
+        "message": "Settings and API keys successfully saved and applied to NovaSentry runtime."
+    }))
+}
+
+async fn test_gemini_handler(
+    State(state): State<WebAppState>,
+    Json(payload): Json<TestGeminiRequest>,
+) -> impl IntoResponse {
+    let s = state.settings.read().await;
+    let key = if let Some(ref k) = payload.api_key {
+        let trimmed = k.trim();
+        if !trimmed.is_empty() {
+            trimmed.to_string()
+        } else {
+            s.gemini_api_key.clone()
+        }
+    } else {
+        s.gemini_api_key.clone()
+    };
+
+    let model = payload.model.unwrap_or_else(|| {
+        if !s.gemini_default_model.is_empty() {
+            s.gemini_default_model.clone()
+        } else {
+            "gemini-1.5-flash".to_string()
+        }
+    });
+
+    if key.trim().is_empty() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(TestGeminiResponse {
+                success: false,
+                status: 400,
+                message: "No Gemini API Key provided. Please enter a key or set GEMINI_API_KEY in settings.".to_string(),
+                model,
+            }),
+        );
+    }
+
+    let url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    let body = serde_json::json!({
+        "model": model,
+        "messages": [
+            { "role": "user", "content": "ping" }
+        ],
+        "max_tokens": 10
+    });
+
+    match state
+        .sonar
+        .http_client()
+        .post(url)
+        .header("Authorization", format!("Bearer {}", key.trim()))
+        .json(&body)
+        .send()
+        .await
+    {
+        Ok(resp) => {
+            let status = resp.status();
+            if status.is_success() {
+                (
+                    StatusCode::OK,
+                    Json(TestGeminiResponse {
+                        success: true,
+                        status: status.as_u16(),
+                        message: format!("Connected successfully to Google Gemini [{}]! Endpoint responded HTTP {}.", model, status),
+                        model,
+                    }),
+                )
+            } else {
+                let err_text = resp.text().await.unwrap_or_default();
+                (
+                    StatusCode::OK,
+                    Json(TestGeminiResponse {
+                        success: false,
+                        status: status.as_u16(),
+                        message: format!("Google Gemini returned HTTP {}: {}", status, err_text),
+                        model,
+                    }),
+                )
+            }
+        }
+        Err(e) => (
+            StatusCode::OK,
+            Json(TestGeminiResponse {
+                success: false,
+                status: 502,
+                message: format!("Failed to reach Google Generative AI gateway: {}", e),
+                model,
+            }),
+        ),
+    }
+}
+
 async fn export_prometheus_metrics(State(state): State<WebAppState>) -> impl IntoResponse {
     let total_chunks = state.sentry.vector_store.count().await;
     let total_audits = if let Some(ref a) = state.sentry.auditor { a.count().await } else { 0 };
@@ -1091,7 +1420,7 @@ pub async fn start_server(
     sonar.simulate_packet(Some("response")).await;
     sonar.simulate_packet(Some("injection")).await;
 
-    let state = WebAppState { sentry, auth, chaos, sonar };
+    let state = WebAppState::new(sentry, auth, chaos, sonar);
     let router = create_router(state);
 
     println!("⚡ NovaSentry Web Server binding to http://{}", addr);

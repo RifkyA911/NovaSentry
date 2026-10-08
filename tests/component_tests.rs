@@ -190,7 +190,7 @@ async fn test_web_app_state_and_vector_inspection() {
     let auth = novasentry::web::auth::AuthDb::new(":memory:").unwrap();
     let chaos = std::sync::Arc::new(novasentry::components::ChaosEngine::new());
     let sonar = std::sync::Arc::new(novasentry::components::SonarEngine::new());
-    let state = novasentry::web::WebAppState { sentry: engine, auth, chaos, sonar };
+    let state = novasentry::web::WebAppState::new(engine, auth, chaos, sonar);
     let _router = novasentry::web::create_router(state);
 }
 
@@ -343,6 +343,47 @@ async fn test_guardrail_base64_obfuscation_detector() {
     let insp = guardrail.inspect_detailed(b64_attack, true);
     assert!(insp.findings.iter().any(|f| f.category == novasentry::components::ThreatCategory::ObfuscatedPayload));
 }
+
+#[tokio::test]
+async fn test_settings_view_and_gemini_configuration() {
+    let embedder = std::sync::Arc::new(novasentry::components::MockEmbedder::new(384));
+    let store = std::sync::Arc::new(novasentry::components::InMemoryVectorStore::new());
+    let retriever = std::sync::Arc::new(novasentry::components::HybridRetriever::new(embedder.clone(), store.clone()));
+    let generator = std::sync::Arc::new(novasentry::components::MockLlmGenerator::new("NovaSentry-Reasoner-v1"));
+    let chunker = std::sync::Arc::new(novasentry::components::RecursiveCharacterChunker::default());
+    let guardrail = std::sync::Arc::new(novasentry::components::NovaGuardrail::default());
+
+    let engine = std::sync::Arc::new(
+        novasentry::components::SentryEngine::new(chunker, embedder, store, retriever, generator)
+            .with_guardrail(guardrail)
+    );
+
+    let auth = novasentry::web::auth::AuthDb::new(":memory:").unwrap();
+    let chaos = std::sync::Arc::new(novasentry::components::ChaosEngine::new());
+    let sonar = std::sync::Arc::new(novasentry::components::SonarEngine::new());
+    let state = novasentry::web::WebAppState::new(engine, auth, chaos, sonar);
+
+    // Verify initial settings default
+    {
+        let settings = state.settings.read().await;
+        assert_eq!(settings.gemini_default_model, "gemini-1.5-flash");
+        assert!(settings.redaction_enabled);
+    }
+
+    // Verify updating settings in memory
+    {
+        let mut settings = state.settings.write().await;
+        settings.gemini_api_key = "AIzaSyFakeKeyForTesting123456789".to_string();
+        settings.gemini_default_model = "gemini-2.0-flash".to_string();
+    }
+
+    {
+        let settings = state.settings.read().await;
+        assert_eq!(settings.gemini_api_key, "AIzaSyFakeKeyForTesting123456789");
+        assert_eq!(settings.gemini_default_model, "gemini-2.0-flash");
+    }
+}
+
 
 
 

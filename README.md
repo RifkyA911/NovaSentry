@@ -96,7 +96,17 @@ flowchart LR
 - **9router Upstream Mesh Integration**: First-class gateway connector and traffic simulator routing requests across Claude 3.5 Sonnet, GPT-4o, DeepSeek-V3, and Llama 3.3 with live arbitrage cost savings tracking.
 - **Synthetic Acoustic Audio Ping**: Optional WebAudio synthesizer providing authentic auditory radar blips for incoming prompts and guardrail interceptions.
 
-### 5. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity
+### 5. 🛡️ Google Gemini Free Tier Reverse Proxy & Quota Shield
+- **Zero-Latency Ingress Shielding**: Intercepts prompt injections, jailbreaks, and delimiter breakouts in **<0.1ms** local Rust memory *before* calling Google Generative AI, preventing adversarial actors from consuming your Free Tier quota (15 RPM / 1,500 RPD).
+- **Post-Call Egress Scrubbing**: Scans upstream Gemini output and automatically redacts exposed credentials, API keys, Bearer JWTs, and PII before delivering to downstream apps.
+- **Drop-In OpenAI Compatibility**: Client applications simply point `base_url="http://localhost:3000/v1"` with models `gemini-1.5-flash`, `gemini-2.0-flash`, or `gemini-1.5-pro`.
+
+### 6. ⚙️ Dedicated System Settings & Live Connection Testing
+- Dedicated Settings & Keys dashboard view (`#view-settings`) allows configuring `GEMINI_API_KEY`, 9Router upstream URLs, honeytokens, and guardrail strictness in real time.
+- Integrated **"Test Gemini Connection"** tool (`POST /api/settings/test-gemini`) sending live probes directly to Google Generative AI to verify key validity.
+- Thread-safe runtime state synced automatically to local `.env` without requiring server daemon restart.
+
+### 7. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity
 - **True 3D Vector Icon**: Volumetric claymorphic shield and glowing core orb with ambient occlusion and specular highlights in Carrot Orange (`#ea580c` ➔ `#f97316` ➔ `#fb923c`).
 - **Dark & Light Mode**: WCAG-compliant high-contrast navigation styling across cards, forms, and audit tables.
 - **Clean Separation of Concerns**: The Dashboard focuses exclusively on live metrics, KPIs, and sensor streams, while extensive architectural documentation resides in its own dedicated **System Guide & Docs** menu.
@@ -179,7 +189,7 @@ cargo run -- --demo
 cargo test
 ```
 
-Verifies all **11 unit and integration tests** (vector cosine math, prompt injection detection, hybrid RAG retrieval, chaos engine self-healing, sonar engine and 9router gateway integration, and SQLite authentication).
+Verifies all **16 unit and integration tests** (vector cosine math, prompt injection detection, hybrid RAG retrieval, chaos engine self-healing, sonar engine and 9router gateway integration, Google Gemini settings configuration, and SQLite authentication).
 
 ---
 
@@ -209,8 +219,11 @@ Verifies all **11 unit and integration tests** (vector cosine math, prompt injec
 | `GET` | `/api/chaos/experiments` | Public | Lists all 6 available chaos engineering scenarios |
 | `POST` | `/api/chaos/run` | Public | Injects a chaos disruption and executes self-healing verification |
 | `GET` | `/api/chaos/metrics` | Public | Retrieves resilience KPIs, tokens preserved & breaker counts |
+| `GET` | `/api/settings` | Public / Officer | **System Settings**: Retrieves masked Gemini API key status, default model, 9Router endpoint, guardrail strictness, and honeytokens |
+| `POST` | `/api/settings` | Officer | **Update Settings**: Mutates runtime configuration in thread-safe state and syncs to local `.env` |
+| `POST` | `/api/settings/test-gemini` | Public / Officer | **Live Gemini Probe**: Sends lightweight probe to Google Generative AI to verify API key validity in real time |
 | `POST` | `/v1/chat/completions` | Public / Proxy | **OpenAI-Compatible Reverse Proxy**: Inspects ingress prompt, blocks injections, scrubs egress PII/secrets, and proxies upstream |
-| `GET` | `/v1/models` | Public / Proxy | **OpenAI-Compatible Models Endpoint**: Lists local reasoners and connected 9router mesh nodes |
+| `GET` | `/v1/models` | Public / Proxy | **OpenAI-Compatible Models Endpoint**: Lists local reasoners, Google Gemini free tier models, and connected 9router mesh nodes |
 | `GET` | `/metrics` | Public / SIEM | **Prometheus Standard Metrics Exporter**: Telemetry metrics scrapable by Grafana, Prometheus, and Datadog |
 
 ---
@@ -220,7 +233,9 @@ Verifies all **11 unit and integration tests** (vector cosine math, prompt injec
 To maintain production standards and complete transparency, NovaSentry categorizes its modules into three maturity tiers:
 
 | Tier | Component | Implementation Status | Description & Value |
-| **🟢 STABLE** | `OpenAI Reverse Proxy (/v1)` | **Production-Ready** | Drop-in OpenAI-compatible gateway (`/v1/chat/completions`) for n8n, Hermes, Cursor, and Python AI agents with inline threat interception. |
+| :--- | :--- | :--- | :--- |
+| **🟢 STABLE** | `System Settings & Keys (/api/settings)` | **Production-Ready** | Runtime configuration page & API for Google Gemini keys, 9Router tunnels, honeytokens, and live connection testing without daemon restarts. |
+| **🟢 STABLE** | `OpenAI Reverse Proxy (/v1)` | **Production-Ready** | Drop-in OpenAI-compatible gateway (`/v1/chat/completions`) for Google Gemini Free tier, n8n, Hermes, Cursor, and Python AI agents with inline threat interception. |
 | **🟢 STABLE** | `Prometheus Exporter (/metrics)` | **Production-Ready** | Standard Prometheus exposition format for Grafana, Datadog, and SIEM observability pipelines. |
 | **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Production-Ready** | Deep boundary filter intercepting prompt injections, delimiter breakouts, canary leaks, and automated PII/secret scrubbing. |
 | **🟢 STABLE** | `SQLite Auth & Sessions` | **Production-Ready** | Bundled `rusqlite` database engine storing credentials hashed with SHA-256 + cryptographic salts, and ephemeral bearer tokens. |
@@ -232,6 +247,7 @@ To maintain production standards and complete transparency, NovaSentry categoriz
 | **🟡 BETA** | `Upstream Mesh Arbitrage` | **Beta / Gateway Client** | Multi-model routing telemetry and estimated cost arbitrage across Claude, GPT-4o, and DeepSeek. |
 | **🟣 EXPERIMENTAL** | `ChaosEngine` (Fault Injections) | **Experimental Lab** | Stress-testing harness and circuit breaker simulator designed to benchmark agentic loops and schema breakdown resilience. |
 | **🟣 EXPERIMENTAL** | `Tactical Sonar Canvas & Audio` | **Experimental Lab** | High-density visual radar screen on HTML5 Canvas and synthetic WebAudio pings for demonstration and SOC monitoring. |
+
 
 ---
 
