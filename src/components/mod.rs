@@ -17,5 +17,5 @@ pub use generator::{MockLlmGenerator, PromptBuilder};
 pub use guardrail::NovaGuardrail;
 pub use retriever::HybridRetriever;
 pub use sentry::SentryEngine;
-pub use sonar::{FlowType, NineRouterConfig, NineRouterStatus, RadarCoordinate, SonarEngine, SonarPacket, ThreatVerdict};
+pub use sonar::{FlowType, NineRouterConfig, NineRouterStatus, RadarCoordinate, SonarEngine, SonarPacket, ThreatVerdict, TunnelProbeResult};
 pub use vector_store::InMemoryVectorStore;

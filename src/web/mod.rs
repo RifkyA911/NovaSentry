@@ -131,6 +131,12 @@ pub struct NineRouterConnectRequest {
 }
 
 #[derive(Deserialize)]
+pub struct NineRouterProbeRequest {
+    pub endpoint: Option<String>,
+    pub api_key: Option<String>,
+}
+
+#[derive(Deserialize)]
 pub struct SonarSimulateRequest {
     pub sample_type: Option<String>,
 }
@@ -149,6 +155,7 @@ pub fn create_router(state: WebAppState) -> Router {
         .route("/api/sonar/packets", get(get_sonar_recent))
         .route("/api/sonar/9router/status", get(get_9router_status_handler))
         .route("/api/sonar/9router/connect", post(connect_9router_handler))
+        .route("/api/sonar/9router/probe", post(probe_9router_tunnel_handler))
         .route("/api/sonar/9router/disconnect", post(disconnect_9router_handler))
         .route("/api/sonar/simulate", post(simulate_sonar_packet_handler))
         // Agentic Chaos Engineering Endpoints
@@ -485,6 +492,17 @@ async fn connect_9router_handler(
         .connect_9router(payload.endpoint, payload.api_key, payload.routing_profile)
         .await;
     Json(status)
+}
+
+async fn probe_9router_tunnel_handler(
+    State(state): State<WebAppState>,
+    Json(payload): Json<NineRouterProbeRequest>,
+) -> impl IntoResponse {
+    let result = state
+        .sonar
+        .probe_tunnel(payload.endpoint.as_deref(), payload.api_key.as_deref())
+        .await;
+    Json(result)
 }
 
 async fn disconnect_9router_handler(State(state): State<WebAppState>) -> impl IntoResponse {

@@ -280,5 +280,27 @@ async fn test_sonar_engine_and_9router_gateway_integration() {
     assert!(!recent.is_empty());
 }
 
+#[tokio::test]
+async fn test_sonar_real_tunnel_probe() {
+    let sonar = novasentry::components::SonarEngine::new();
+
+    // 1. Probe a non-existent port to verify real transport error handling without panic
+    let probe_err = sonar
+        .probe_tunnel(
+            Some("http://127.0.0.1:59999/v1"),
+            Some("test-key"),
+        )
+        .await;
+
+    assert!(!probe_err.success);
+    assert!(!probe_err.reachable);
+    assert!(probe_err.status_code.is_none());
+    assert!(!probe_err.message.is_empty());
+
+    // 2. Verify probe telemetry packet was recorded in recent packets
+    let recent = sonar.get_recent_packets().await;
+    assert!(recent.iter().any(|p| p.upstream_gateway.contains("59999")));
+}
+
 
 

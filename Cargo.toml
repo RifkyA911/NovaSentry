@@ -28,6 +28,7 @@ thiserror = "1.0.61"
 # Web Server & REST API
 axum = "0.7"
 tower-http = { version = "0.5", features = ["cors"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 # Authentication & Database
 rusqlite = { version = "0.31", features = ["bundled"] }

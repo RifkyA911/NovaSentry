@@ -81,6 +81,17 @@ impl Default for NineRouterConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TunnelProbeResult {
+    pub success: bool,
+    pub endpoint: String,
+    pub status_code: Option<u16>,
+    pub latency_ms: u64,
+    pub reachable: bool,
+    pub message: String,
+    pub response_snippet: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NineRouterStatus {
     pub connected: bool,
     pub endpoint: String,
@@ -101,11 +112,24 @@ pub struct SonarEngine {
     total_routed: AtomicU64,
     total_tokens: AtomicU64,
     circuit_trips: AtomicU32,
+    http_client: reqwest::Client,
+}
+
+impl Default for SonarEngine {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl SonarEngine {
     pub fn new() -> Self {
         let (tx, _) = broadcast::channel(BROADCAST_CHANNEL_CAPACITY);
+        let http_client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(6))
+            .user_agent("NovaSentry-SonarProbe/1.0 (Rust; x86_64)")
+            .build()
+            .unwrap_or_else(|_| reqwest::Client::new());
+
         Self {
             tx,
             recent_packets: RwLock::new(VecDeque::with_capacity(MAX_RECENT_PACKETS)),
@@ -113,6 +137,7 @@ impl SonarEngine {
             total_routed: AtomicU64::new(14),
             total_tokens: AtomicU64::new(58_420),
             circuit_trips: AtomicU32::new(1),
+            http_client,
         }
     }
 
@@ -264,6 +289,153 @@ impl SonarEngine {
             total_tokens_routed: tokens,
             total_cost_saved_usd: (cost_saved * 100.0).round() / 100.0,
             active_circuit_breakers: trips,
+        }
+    }
+
+    /// Performs a real HTTP network probe over the wire to the 9router / OpenAI gateway endpoint.
+    /// Sends a GET /models request with Bearer authorization, recording real network latency and status.
+    pub async fn probe_tunnel(
+        &self,
+        endpoint_override: Option<&str>,
+        api_key_override: Option<&str>,
+    ) -> TunnelProbeResult {
+        let (endpoint, api_key) = {
+            let cfg = self.config.read().await;
+            (
+                endpoint_override
+                    .filter(|s| !s.trim().is_empty())
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| cfg.endpoint.clone()),
+                api_key_override
+                    .filter(|s| !s.trim().is_empty())
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| cfg.api_key.clone()),
+            )
+        };
+
+        let trimmed_ep = endpoint.trim().trim_end_matches('/');
+        let target_url = if trimmed_ep.ends_with("/models") {
+            trimmed_ep.to_string()
+        } else {
+            format!("{}/models", trimmed_ep)
+        };
+
+        let start = std::time::Instant::now();
+        let mut request = self.http_client.get(&target_url);
+        if !api_key.trim().is_empty() {
+            request = request.header("Authorization", format!("Bearer {}", api_key.trim()));
+        }
+
+        match request.send().await {
+            Ok(resp) => {
+                let latency_ms = start.elapsed().as_millis() as u64;
+                let status_code = resp.status().as_u16();
+                let is_success = resp.status().is_success();
+
+                let body_text = resp.text().await.unwrap_or_default();
+                let snippet = if body_text.len() > 300 {
+                    format!("{}...", &body_text[..300])
+                } else {
+                    body_text.clone()
+                };
+
+                let (verdict, message, is_ok) = if is_success {
+                    (
+                        ThreatVerdict::Clean,
+                        format!("Tunnel active & reachable: HTTP {} OK (latency: {}ms)", status_code, latency_ms),
+                        true,
+                    )
+                } else if status_code == 401 || status_code == 403 {
+                    // Gateway is reachable over the wire, but credentials were required or invalid
+                    (
+                        ThreatVerdict::Suspicious,
+                        format!("Tunnel gateway reachable (HTTP {} Auth Required): Check your 9router API key.", status_code),
+                        true,
+                    )
+                } else {
+                    (
+                        ThreatVerdict::Suspicious,
+                        format!("Tunnel gateway returned HTTP {}: {}", status_code, snippet.chars().take(80).collect::<String>()),
+                        false,
+                    )
+                };
+
+                let probe_packet = SonarPacket {
+                    id: format!("pkt-probe-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+                    timestamp: Utc::now(),
+                    flow_type: FlowType::GatewayHandshake,
+                    upstream_gateway: format!("9router Tunnel [{}]", target_url),
+                    provider: "9router Gateway".to_string(),
+                    model: "probe/v1-models".to_string(),
+                    client_origin: "NovaSentry Probe Client".to_string(),
+                    latency_ms,
+                    prompt_tokens: 12,
+                    completion_tokens: body_text.len().min(500) / 4,
+                    estimated_cost_usd: 0.0,
+                    threat_verdict: verdict,
+                    radar_coordinate: RadarCoordinate {
+                        angle_deg: 90.0,
+                        distance_norm: ((latency_ms as f32) / 1000.0).clamp(0.1, 0.95),
+                        frequency_khz: if is_ok { 18.0 } else { 12.0 },
+                        intensity_db: if is_ok { -5.0 } else { -18.0 },
+                    },
+                    payload_preview: format!("TUNNEL_PROBE: {} -> HTTP {} ({}ms)", target_url, status_code, latency_ms),
+                };
+                self.emit_packet(probe_packet).await;
+
+                TunnelProbeResult {
+                    success: is_ok,
+                    endpoint: target_url,
+                    status_code: Some(status_code),
+                    latency_ms,
+                    reachable: true,
+                    message,
+                    response_snippet: Some(snippet),
+                }
+            }
+            Err(err) => {
+                let latency_ms = start.elapsed().as_millis() as u64;
+                let error_desc = if err.is_timeout() {
+                    "Connection timed out (exceeded 6s threshold)".to_string()
+                } else if err.is_connect() {
+                    format!("Connection refused or DNS lookup failure: {}", err)
+                } else {
+                    format!("HTTP transport error: {}", err)
+                };
+
+                let probe_packet = SonarPacket {
+                    id: format!("pkt-probe-err-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+                    timestamp: Utc::now(),
+                    flow_type: FlowType::RouterFallback,
+                    upstream_gateway: format!("9router Tunnel [{}]", target_url),
+                    provider: "Network Layer".to_string(),
+                    model: "probe/transport-failure".to_string(),
+                    client_origin: "NovaSentry Probe Client".to_string(),
+                    latency_ms,
+                    prompt_tokens: 0,
+                    completion_tokens: 0,
+                    estimated_cost_usd: 0.0,
+                    threat_verdict: ThreatVerdict::Blocked,
+                    radar_coordinate: RadarCoordinate {
+                        angle_deg: 270.0,
+                        distance_norm: 0.95,
+                        frequency_khz: 9.0,
+                        intensity_db: -24.0,
+                    },
+                    payload_preview: format!("TUNNEL_PROBE_FAILED: {} ({}ms)", error_desc, latency_ms),
+                };
+                self.emit_packet(probe_packet).await;
+
+                TunnelProbeResult {
+                    success: false,
+                    endpoint: target_url,
+                    status_code: None,
+                    latency_ms,
+                    reachable: false,
+                    message: error_desc,
+                    response_snippet: None,
+                }
+            }
         }
     }
 

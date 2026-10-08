@@ -197,11 +197,31 @@ Menguji seluruh 9 unit test dan integrasi (vektor kosinus semantik, deteksi inje
 | `GET` | `/api/sonar/packets` | Publik | Snapshot buffer sirkular paket LLM dalam ruang latensi & vektor |
 | `GET` | `/api/sonar/9router/status` | Publik | Status koneksi gateway 9router, penghematan biaya model, & profil |
 | `POST` | `/api/sonar/9router/connect` | Publik | Menghubungkan / mengubah konfigurasi gateway 9router |
+| `POST` | `/api/sonar/9router/probe` | Publik | Uji coba jaringan HTTP over-the-wire nyata untuk mengetes latensi & otentikasi endpoint 9router |
 | `POST` | `/api/sonar/9router/disconnect` | Publik | Memutuskan koneksi 9router ke mode lokal luring |
 | `POST` | `/api/sonar/simulate` | Publik | Menyuntikkan simulasi paket arus multi-agen LLM |
 | `GET` | `/api/chaos/experiments` | Publik | Mendapatkan katalog 6 skenario eksperimen chaos multi-agen |
 | `POST` | `/api/chaos/run` | Publik | Menyuntikkan gangguan chaos dan menjalankan protokol pemulihan mandiri |
 | `GET` | `/api/chaos/metrics` | Publik | Mengambil telemetri ketahanan, penghematan token, dan status circuit breaker |
+
+---
+
+## 🧭 Matriks Kematangan Fitur & Taksonomi Jujur
+
+Untuk standar keteknikan yang transparan, modul NovaSentry dikelompokkan ke dalam 3 tingkatan kematangan:
+
+| Tingkatan | Komponen | Status Implementasi | Deskripsi & Nilai Teknis |
+|---|---|---|---|
+| **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Siap Produksi** | Filter batas teks murni Rust berbasis regex berkecepatan sub-milidetik untuk mencegah prompt injection dan kebocoran rahasia. |
+| **🟢 STABLE** | `SQLite Auth & Sessions` | **Siap Produksi** | Basis data SQLite lokal (`rusqlite`) dengan hashing kata sandi SHA-256 + garam acak serta manajemen sesi token. |
+| **🟢 STABLE** | `SentryEngine` (Triage Insiden) | **Siap Produksi** | Pipeline triage cerdas berbasis RAG yang mengaitkan insiden telemetri dengan panduan SOP melalui kemiripan vektor kosinus. |
+| **🟢 STABLE** | `InMemoryVectorStore` & `VectorMath` | **Siap Produksi** | Penyimpanan vektor dense 384-dimensi dengan dot-product dan penskoran hibrida Reciprocal Rank Fusion (RRF). |
+| **🟢 STABLE** | `SentryAuditor` | **Siap Produksi** | Pencatat forensik tahan manipulasi yang menyimpan setiap kejadian dan metrik latensi ke dalam SQLite. |
+| **🟢 STABLE** | `Real-Time SSE Stream` | **Siap Produksi** | Stream dorong native Axum melalui kanal broadcast Tokio dengan latensi pengiriman sub-milidetik ke dasbor SOC. |
+| **🟡 BETA** | `9router HTTP Tunnel Probe` | **Beta / Klien Gateway** | Klien `reqwest` asinkron dengan `rustls` untuk menguji jabat tangan jaringan, TLS, dan probe konektivitas HTTP `/models` ke gateway 9router. |
+| **🟡 BETA** | `Upstream Mesh Arbitrage` | **Beta / Klien Gateway** | Telemetri perutean multi-model dan estimasi penghematan biaya model antara Claude, GPT-4o, dan DeepSeek. |
+| **🟣 EXPERIMENTAL** | `ChaosEngine` (Fault Injections) | **Laboratorium Pengujian** | Rangkaian uji ketahanan dan simulator circuit breaker untuk menguji ketahanan loop rekursif dan kerusakan skema JSON. |
+| **🟣 EXPERIMENTAL** | `Radar Sonar Akustik & Audio` | **Laboratorium Pengujian** | Layar visual radar Canvas HTML5 berdensitas tinggi dan sintetis ping WebAudio untuk demonstrasi pemantauan SOC. |
 
 ---
 

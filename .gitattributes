@@ -1,0 +1,7 @@
+# GitHub Linguist Language Override
+# Mark dashboard assets and documentation so GitHub correctly categorizes NovaSentry as 90%+ Rust
+
+src/web/assets/* linguist-vendored
+src/web/assets/** linguist-vendored
+*.html linguist-detectable=false
+*.svg linguist-detectable=false

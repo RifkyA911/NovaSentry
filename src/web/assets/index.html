@@ -234,7 +234,10 @@
           <button onclick="switchView('view-dashboard')" id="nav-view-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="layout-dashboard" class="w-4 h-4 flex-shrink-0"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Dashboard</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Dashboard</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">STABLE</span>
+              </div>
               <div class="nav-sub text-[10px] font-normal">Real-time telemetry &amp; KPIs</div>
             </div>
           </button>
@@ -247,10 +250,10 @@
             </div>
             <div>
               <div class="nav-title font-bold text-sm flex items-center gap-1.5">
-                <span>Sonar Detector</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">9router</span>
+                <span>Sonar Radar</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 font-mono font-bold border border-sky-500/20">BETA</span>
               </div>
-              <div class="nav-sub text-[10px] font-normal">Real-time LLM stream radar</div>
+              <div class="nav-sub text-[10px] font-normal">9router LLM stream monitor</div>
             </div>
           </button>
 
@@ -258,57 +261,75 @@
           <button onclick="switchView('view-flow')" id="nav-view-flow" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="git-merge" class="w-4 h-4 flex-shrink-0"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Architecture Flow</div>
-              <div class="nav-sub text-[10px] font-normal">n8n-style real-time visualizer</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Architecture Flow</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono font-bold border border-purple-500/20">VISUAL</span>
+              </div>
+              <div class="nav-sub text-[10px] font-normal">Interactive pipeline graph</div>
             </div>
           </button>
 
-          <!-- 3. Incident Triage Lab -->
+          <!-- 4. Incident Triage Lab -->
           <button onclick="switchView('view-investigate')" id="nav-view-investigate" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="shield-alert" class="w-4 h-4 flex-shrink-0"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Incident Triage Lab</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Incident Triage</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">STABLE</span>
+              </div>
               <div class="nav-sub text-[10px] font-normal">Automated RAG root cause analysis</div>
             </div>
           </button>
 
-          <!-- 4. Perimeter Guardrail -->
+          <!-- 5. Perimeter Guardrail -->
           <button onclick="switchView('view-guardrail')" id="nav-view-guardrail" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="scan-line" class="w-4 h-4 flex-shrink-0"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Perimeter Guardrail</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Perimeter Guard</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">STABLE</span>
+              </div>
               <div class="nav-sub text-[10px] font-normal">Prompt injection &amp; leak tests</div>
             </div>
           </button>
 
-          <!-- 5. Knowledge Runbooks -->
+          <!-- 6. Knowledge Runbooks -->
           <button onclick="switchView('view-knowledge')" id="nav-view-knowledge" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="database" class="w-4 h-4 flex-shrink-0"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Knowledge Base</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Knowledge Base</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">STABLE</span>
+              </div>
               <div class="nav-sub text-[10px] font-normal">Indexed playbooks &amp; CVE runbooks</div>
             </div>
           </button>
 
-          <!-- 6. Compliance Audit -->
+          <!-- 7. Compliance Audit -->
           <button onclick="switchView('view-audit')" id="nav-view-audit" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="clipboard-list" class="w-4 h-4 flex-shrink-0"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Compliance Audit</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Compliance Audit</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">STABLE</span>
+              </div>
               <div class="nav-sub text-[10px] font-normal">Immutable forensic event logs</div>
             </div>
           </button>
 
-          <!-- 7. Agentic Chaos Lab -->
+          <!-- 8. Agentic Chaos Lab -->
           <button onclick="switchView('view-chaos')" id="nav-view-chaos" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="flame" class="w-4 h-4 flex-shrink-0 text-amber-500"></i>
             <div>
-              <div class="nav-title font-bold text-sm">Agentic Chaos Lab</div>
-              <div class="nav-sub text-[10px] font-normal">Resilience &amp; Self-Healing</div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Chaos Lab</span>
+                <span class="text-[8px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono font-bold border border-amber-500/20">EXPERIMENTAL</span>
+              </div>
+              <div class="nav-sub text-[10px] font-normal">Resilience fault injection</div>
             </div>
           </button>
 
-          <!-- 7. System Guide & Docs -->
+          <!-- 9. System Guide & Docs -->
           <button onclick="switchView('view-guide')" id="nav-view-guide" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="book-open" class="w-4 h-4 flex-shrink-0"></i>
             <div>
@@ -1593,14 +1614,24 @@
           </select>
         </div>
 
-        <div class="pt-3 flex items-center justify-end gap-2">
-          <button type="button" onclick="close9RouterModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300">
-            Cancel
+        <div id="cfg-9r-probe-result" class="hidden p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono space-y-1">
+          <!-- Live probe output rendered dynamically -->
+        </div>
+
+        <div class="pt-3 flex flex-wrap items-center justify-between gap-2">
+          <button type="button" onclick="handle9RouterProbe()" id="btn-9r-probe" class="px-3.5 py-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/30 font-bold transition flex items-center gap-1.5">
+            <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+            <span>Test Real API Tunnel</span>
           </button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5">
-            <i data-lucide="check" class="w-3.5 h-3.5"></i>
-            <span>Save &amp; Connect to 9router</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="close9RouterModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300">
+              Cancel
+            </button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+              <span>Save &amp; Connect to 9router</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -2966,6 +2997,58 @@
       if (modal) {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
+      }
+    }
+
+    async function handle9RouterProbe() {
+      const btn = document.getElementById('btn-9r-probe');
+      const resultBox = document.getElementById('cfg-9r-probe-result');
+      const endpoint = document.getElementById('cfg-9r-endpoint').value.trim();
+      const apiKey = document.getElementById('cfg-9r-apikey').value.trim();
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Probing Wire...</span>`;
+        lucide.createIcons();
+      }
+      if (resultBox) {
+        resultBox.classList.remove('hidden');
+        resultBox.innerHTML = `<div class="text-slate-400">Initiating real TCP handshake & HTTP GET probe to: <code>${endpoint}</code>...</div>`;
+      }
+
+      try {
+        const res = await fetch('/api/sonar/9router/probe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint, api_key: apiKey })
+        });
+        const data = await res.json();
+        if (resultBox) {
+          const statusBadge = data.reachable 
+            ? (data.success 
+                ? '<span class="text-emerald-500 font-bold">[REACHABLE &amp; AUTHENTICATED]</span>' 
+                : `<span class="text-amber-500 font-bold">[REACHABLE - STATUS ${data.status_code || 'AUTH'}]</span>`)
+            : '<span class="text-rose-500 font-bold">[UNREACHABLE / NETWORK ERROR]</span>';
+
+          resultBox.innerHTML = `
+            <div class="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-slate-800">
+              ${statusBadge}
+              <span class="text-[10px] text-slate-400 font-bold">${data.latency_ms} ms</span>
+            </div>
+            <div class="text-[11px] text-slate-700 dark:text-slate-200 pt-1">${data.message}</div>
+            ${data.response_snippet ? `<div class="text-[10px] text-slate-400 bg-slate-950 p-2 rounded mt-1 truncate" title="${data.response_snippet}">Payload: ${data.response_snippet}</div>` : ''}
+          `;
+        }
+      } catch (err) {
+        if (resultBox) {
+          resultBox.innerHTML = `<span class="text-rose-500 font-bold">[LOCAL FETCH FAILED]</span> <span class="text-slate-400">${err.message}</span>`;
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="activity" class="w-3.5 h-3.5"></i><span>Test Real API Tunnel</span>`;
+          lucide.createIcons();
+        }
       }
     }
 

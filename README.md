@@ -203,11 +203,31 @@ Verifies all **11 unit and integration tests** (vector cosine math, prompt injec
 | `GET` | `/api/sonar/packets` | Public | Circular buffer snapshot of recent packets in vector & latency space |
 | `GET` | `/api/sonar/9router/status` | Public | Retrieves 9router connection status, model arbitrage savings, active profile |
 | `POST` | `/api/sonar/9router/connect` | Public | Connects / reconfigures upstream 9router gateway endpoint, API key, profile |
+| `POST` | `/api/sonar/9router/probe` | Public | Real over-the-wire HTTP network probe to test connectivity, TLS, and auth against 9router endpoint |
 | `POST` | `/api/sonar/9router/disconnect` | Public | Disconnects 9router gateway, switching to local offline mode |
 | `POST` | `/api/sonar/simulate` | Public | Injects synthetic multi-agent LLM traffic packet into live sonar stream |
 | `GET` | `/api/chaos/experiments` | Public | Lists all 6 available chaos engineering scenarios |
 | `POST` | `/api/chaos/run` | Public | Injects a chaos disruption and executes self-healing verification |
 | `GET` | `/api/chaos/metrics` | Public | Retrieves resilience KPIs, tokens preserved & breaker counts |
+
+---
+
+## 🧭 Feature Maturity Matrix & Honest Taxonomy
+
+To maintain production standards and complete transparency, NovaSentry categorizes its modules into three maturity tiers:
+
+| Tier | Component | Implementation Status | Description & Value |
+|---|---|---|---|
+| **🟢 STABLE** | `NovaGuardrail` (Ingress/Egress) | **Production-Ready** | Pure Rust regex-driven boundary filter intercepting prompt injections, system prompt leaks, Canary tokens, and PII in sub-millisecond time. |
+| **🟢 STABLE** | `SQLite Auth & Sessions` | **Production-Ready** | Bundled `rusqlite` database engine storing credentials hashed with SHA-256 + cryptographic salts, and ephemeral bearer tokens. |
+| **🟢 STABLE** | `SentryEngine` (Incident Triage) | **Production-Ready** | Knowledge-augmented triage pipeline linking incoming telemetry alerts to grounded playbooks via cosine vector similarity. |
+| **🟢 STABLE** | `InMemoryVectorStore` & `VectorMath` | **Production-Ready** | 384-dimensional dense vector store with dot-product cosine similarity and Reciprocal Rank Fusion (RRF) hybrid scoring. |
+| **🟢 STABLE** | `SentryAuditor` | **Production-Ready** | Tamper-resistant forensic event logger recording every alert, decision, and latency metric into SQLite. |
+| **🟢 STABLE** | `Real-Time SSE Stream` | **Production-Ready** | Native Axum push streaming over Tokio `broadcast` channels delivering sub-millisecond telemetry to SOC clients. |
+| **🟡 BETA** | `9router HTTP Tunnel Probe` | **Beta / Gateway Client** | Real asynchronous `reqwest` client with `rustls` performing live network handshakes, TLS negotiation, and HTTP `/models` connectivity probes. |
+| **🟡 BETA** | `Upstream Mesh Arbitrage` | **Beta / Gateway Client** | Multi-model routing telemetry and estimated cost arbitrage across Claude, GPT-4o, and DeepSeek. |
+| **🟣 EXPERIMENTAL** | `ChaosEngine` (Fault Injections) | **Experimental Lab** | Stress-testing harness and circuit breaker simulator designed to benchmark agentic loops and schema breakdown resilience. |
+| **🟣 EXPERIMENTAL** | `Tactical Sonar Canvas & Audio` | **Experimental Lab** | High-density visual radar screen on HTML5 Canvas and synthetic WebAudio pings for demonstration and SOC monitoring. |
 
 ---
 

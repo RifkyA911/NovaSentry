@@ -8,8 +8,9 @@ pub mod web;
 
 pub mod prelude {
     pub use crate::components::{
-        HybridRetriever, InMemoryVectorStore, MockEmbedder, MockLlmGenerator, NovaGuardrail,
-        PromptBuilder, RecursiveCharacterChunker, SentryAuditor, SentryEngine,
+        ChaosEngine, HybridRetriever, InMemoryVectorStore, MockEmbedder, MockLlmGenerator,
+        NovaGuardrail, PromptBuilder, RecursiveCharacterChunker, SentryAuditor, SentryEngine,
+        SonarEngine, TunnelProbeResult,
     };
     pub use crate::core::{
         AlertSeverity, AnalysisReport, Chunk, Chunker, Document, Embedder, GuardrailValidator,
