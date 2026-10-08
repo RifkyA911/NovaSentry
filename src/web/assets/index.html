@@ -284,6 +284,15 @@
             </div>
           </button>
 
+          <!-- 7. Agentic Chaos Lab -->
+          <button onclick="switchView('view-chaos')" id="nav-view-chaos" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
+            <i data-lucide="flame" class="w-4 h-4 flex-shrink-0 text-amber-500"></i>
+            <div>
+              <div class="nav-title font-bold text-sm">Agentic Chaos Lab</div>
+              <div class="nav-sub text-[10px] font-normal">Resilience &amp; Self-Healing</div>
+            </div>
+          </button>
+
           <!-- 7. System Guide & Docs -->
           <button onclick="switchView('view-guide')" id="nav-view-guide" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="book-open" class="w-4 h-4 flex-shrink-0"></i>
@@ -1051,6 +1060,236 @@
           </div>
         </section>
 
+        <!-- ============================================== -->
+        <!-- VIEW 8: AGENTIC CHAOS ENGINEERING LAB          -->
+        <!-- ============================================== -->
+        <section id="view-chaos" class="view-panel hidden space-y-6">
+          <!-- Header Banner -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-amber-500/10 via-carrot-500/5 to-transparent border-2 border-amber-500/30 dark:border-amber-500/20 backdrop-blur-xl relative overflow-hidden space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div class="max-w-2xl space-y-2">
+                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 inline-flex items-center gap-1.5 font-mono">
+                  <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-500"></i>
+                  <span>Agentic Chaos Engineering &amp; Self-Correction Suite</span>
+                </span>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Proactive Multi-Agent Fault &amp; Loop Stress Testing
+                </h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Simulate cognitive bypasses, context window saturation, upstream provider 429 outages, and recursive loop paradoxes. 
+                  Enforces enterprise reliability standards (e.g., MAS Technology Risk Management, NIST AI RMF) and halts runaway token billing cycles.
+                </p>
+              </div>
+              <button onclick="refreshChaosMetrics()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>Refresh Metrics</span>
+              </button>
+            </div>
+
+            <!-- KPI Dashboard Bar -->
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3.5 pt-2">
+              <div class="p-4 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Total Simulations</div>
+                <div id="chaos-metric-total" class="text-xl font-black text-slate-900 dark:text-white font-mono">0</div>
+                <div class="text-[9px] text-slate-400">Fault injections run</div>
+              </div>
+              <div class="p-4 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-emerald-500">Self-Heal Success</div>
+                <div id="chaos-metric-rate" class="text-xl font-black text-emerald-500 font-mono">100%</div>
+                <div class="text-[9px] text-slate-400">Steady-state preserved</div>
+              </div>
+              <div class="p-4 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-carrot-500">Tokens Preserved</div>
+                <div id="chaos-metric-tokens" class="text-xl font-black text-carrot-500 font-mono">0</div>
+                <div class="text-[9px] text-slate-400">Runaway budget saved</div>
+              </div>
+              <div class="p-4 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-rose-500">Breakers Tripped</div>
+                <div id="chaos-metric-breakers" class="text-xl font-black text-rose-500 font-mono">0</div>
+                <div class="text-[9px] text-slate-400">Infinite loops cut off</div>
+              </div>
+              <div class="p-4 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-sky-500">Avg Mitigation Time</div>
+                <div id="chaos-metric-latency" class="text-xl font-black text-sky-500 font-mono">-- ms</div>
+                <div class="text-[9px] text-slate-400">Sub-second recovery</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Disruption Experiment Cards Grid -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="font-black text-base text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                <span>Disruption Skenarios &amp; Fault Injections</span>
+              </h4>
+              <span class="text-xs font-mono text-slate-400">6 Automated Scenarios Available</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Experiment 1: Indirect Prompt Injection -->
+              <div class="p-5 rounded-2xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 flex flex-col justify-between">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-rose-500/10 text-rose-500 border border-rose-500/20">Adversarial Isolation</span>
+                    <span class="text-[10px] text-slate-400 font-mono">EXP-01</span>
+                  </div>
+                  <h5 class="font-bold text-sm text-slate-900 dark:text-white">Indirect Prompt Injection</h5>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Injects concealed bypass instructions within scanned code/telemetry. Evaluates whether the dual-agent auditor isolates the compromised primary agent.
+                  </p>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    <span class="text-slate-400">KPI:</span> 0% cognitive bypass; context isolation.
+                  </div>
+                </div>
+                <button onclick="executeChaos('indirect_prompt_injection')" id="btn-chaos-indirect_prompt_injection" class="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-rose-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Inject Adversarial Bypass</span>
+                </button>
+              </div>
+
+              <!-- Experiment 2: Context Saturation -->
+              <div class="p-5 rounded-2xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 flex flex-col justify-between">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-purple-500/10 text-purple-500 border border-purple-500/20">Resource Resilience</span>
+                    <span class="text-[10px] text-slate-400 font-mono">EXP-02</span>
+                  </div>
+                  <h5 class="font-bold text-sm text-slate-900 dark:text-white">Context Window Saturation</h5>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Floods 50,000 characters of redundant debugging stack traces to test recursive chunking summarization and avoid buffer exhaustion.
+                  </p>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    <span class="text-slate-400">KPI:</span> Headroom &lt;70% token limit; zero OOM.
+                  </div>
+                </div>
+                <button onclick="executeChaos('context_saturation')" id="btn-chaos-context_saturation" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-purple-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Flood 50k Noise Buffer</span>
+                </button>
+              </div>
+
+              <!-- Experiment 3: Provider Rate Limit -->
+              <div class="p-5 rounded-2xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 flex flex-col justify-between">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-sky-500/10 text-sky-500 border border-sky-500/20">Infrastructure Resilience</span>
+                    <span class="text-[10px] text-slate-400 font-mono">EXP-03</span>
+                  </div>
+                  <h5 class="font-bold text-sm text-slate-900 dark:text-white">Provider Rate Limit (HTTP 429)</h5>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Mocks an unexpected quota rate-limit on the primary LLM provider. Tests sub-500ms transparent failover to secondary offline model.
+                  </p>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    <span class="text-slate-400">KPI:</span> Failover in &lt;500ms; zero loss of context.
+                  </div>
+                </div>
+                <button onclick="executeChaos('provider_rate_limit')" id="btn-chaos-provider_rate_limit" class="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-sky-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Simulate Provider 429 Outage</span>
+                </button>
+              </div>
+
+              <!-- Experiment 4: Infinite Loop Induction -->
+              <div class="p-5 rounded-2xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 flex flex-col justify-between">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/10 text-amber-500 border border-amber-500/20">Cost &amp; Loop Control</span>
+                    <span class="text-[10px] text-slate-400 font-mono">EXP-04</span>
+                  </div>
+                  <h5 class="font-bold text-sm text-slate-900 dark:text-white">Runaway Loop Circuit Breaker</h5>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Injects cyclic paradox prompts. Tests the circuit breaker's capability to halt runaway reflection loops and prevent multi-thousand-dollar API bills.
+                  </p>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    <span class="text-slate-400">KPI:</span> Trip circuit breaker at depth &lt;= 3.
+                  </div>
+                </div>
+                <button onclick="executeChaos('infinite_loop_breaker')" id="btn-chaos-infinite_loop_breaker" class="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-amber-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Induce Cyclic Paradox</span>
+                </button>
+              </div>
+
+              <!-- Experiment 5: Schema Breakdown -->
+              <div class="p-5 rounded-2xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 flex flex-col justify-between">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Data Integrity</span>
+                    <span class="text-[10px] text-slate-400 font-mono">EXP-05</span>
+                  </div>
+                  <h5 class="font-bold text-sm text-slate-900 dark:text-white">Schema Breakdown Attack</h5>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Injects unclosed JSON, raw escape bytes, and emojis designed to crash deterministic parsers down the pipeline.
+                  </p>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    <span class="text-slate-400">KPI:</span> 100% structured JSON compliance.
+                  </div>
+                </div>
+                <button onclick="executeChaos('schema_breakdown')" id="btn-chaos-schema_breakdown" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-emerald-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Corrupt Payload Serialization</span>
+                </button>
+              </div>
+
+              <!-- Experiment 6: Upstream Dependency Outage -->
+              <div class="p-5 rounded-2xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3.5 flex flex-col justify-between">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">Offline Graceful Degradation</span>
+                    <span class="text-[10px] text-slate-400 font-mono">EXP-06</span>
+                  </div>
+                  <h5 class="font-bold text-sm text-slate-900 dark:text-white">Upstream Dependency Blackout</h5>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Simulates total outbound internet connectivity loss to public vulnerability feeds during an active incident investigation.
+                  </p>
+                  <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                    <span class="text-slate-400">KPI:</span> 0% downtime; graceful local vector fallback.
+                  </div>
+                </div>
+                <button onclick="executeChaos('dependency_blackout')" id="btn-chaos-dependency_blackout" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-indigo-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Simulate Network Blackout</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Chaos Execution Forensics & Terminal Console -->
+          <div id="chaos-console-panel" class="p-6 rounded-3xl bg-slate-950 border border-slate-800 space-y-4 font-mono text-xs shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span class="text-slate-200 font-bold">CHAOS INJECTION TELEMETRY &amp; SELF-HEALING CONSOLE</span>
+              </div>
+              <div id="chaos-status-pill" class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                SYSTEM IDLE
+              </div>
+            </div>
+
+            <!-- Terminal Logs Output -->
+            <div id="chaos-logs-output" class="p-4 rounded-2xl bg-black/50 border border-slate-800/60 min-h-[160px] max-h-[260px] overflow-y-auto space-y-1.5 text-slate-300">
+              <div class="text-slate-500">> Select any chaos experiment above to inject faults into the multi-agent pipeline and observe self-healing behaviors.</div>
+            </div>
+
+            <!-- Execution Meta Details -->
+            <div id="chaos-execution-meta" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/80 text-[11px]">
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-[9px] uppercase font-bold text-slate-500">Mitigation Strategy</div>
+                <div id="chaos-meta-strategy" class="text-slate-200 font-bold truncate mt-0.5">--</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-[9px] uppercase font-bold text-slate-500">Tokens Preserved</div>
+                <div id="chaos-meta-tokens" class="text-carrot-400 font-bold mt-0.5">-- tokens</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="text-[9px] uppercase font-bold text-slate-500">Self-Healing Latency</div>
+                <div id="chaos-meta-latency" class="text-emerald-400 font-bold mt-0.5">-- ms</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
@@ -1338,6 +1577,7 @@
           'view-guardrail': 'Perimeter Guardrail Validator',
           'view-knowledge': 'Knowledge Base & Runbook Store',
           'view-audit': 'Compliance Forensic Audit Trail',
+          'view-chaos': 'Agentic Chaos Engineering & Self-Correction Lab',
           'view-guide': 'System Guide & Executive Documentation'
         };
         titleEl.innerHTML = `<span class="text-carrot-500">●</span> <span>${titles[viewId] || 'NovaSentry'}</span>`;
@@ -1346,6 +1586,8 @@
       updateNavStyles(viewId);
       if (viewId === 'view-flow') {
         setTimeout(updateFlowWires, 50);
+      } else if (viewId === 'view-chaos') {
+        refreshChaosMetrics();
       }
       lucide.createIcons();
     }
@@ -1903,6 +2145,135 @@
           updateFlowWires();
         }, 900);
         setTimeout(resetAll, 3200);
+      }
+    }
+
+    // Agentic Chaos Engineering Suite Handlers
+    async function refreshChaosMetrics() {
+      try {
+        const res = await fetch('/api/chaos/metrics');
+        if (res.ok) {
+          const m = await res.json();
+          const totalEl = document.getElementById('chaos-metric-total');
+          const rateEl = document.getElementById('chaos-metric-rate');
+          const tokensEl = document.getElementById('chaos-metric-tokens');
+          const breakersEl = document.getElementById('chaos-metric-breakers');
+          const latencyEl = document.getElementById('chaos-metric-latency');
+
+          if (totalEl) totalEl.innerText = m.total_simulations;
+          if (rateEl) {
+            rateEl.innerText = m.total_simulations > 0 
+              ? `${Math.round((m.successful_self_heals / m.total_simulations) * 100)}%` 
+              : '100%';
+          }
+          if (tokensEl) tokensEl.innerText = m.estimated_tokens_preserved.toLocaleString();
+          if (breakersEl) breakersEl.innerText = m.circuit_breaker_trips;
+          if (latencyEl) {
+            latencyEl.innerText = m.total_simulations > 0 
+              ? `${m.average_mitigation_latency_ms.toFixed(1)} ms` 
+              : '-- ms';
+          }
+        }
+      } catch (e) {
+        console.error('Failed to refresh chaos metrics:', e);
+      }
+    }
+
+    async function executeChaos(experimentId) {
+      const btn = document.getElementById(`btn-chaos-${experimentId}`);
+      const logsBox = document.getElementById('chaos-logs-output');
+      const statusPill = document.getElementById('chaos-status-pill');
+      const metaBox = document.getElementById('chaos-execution-meta');
+      const metaStrategy = document.getElementById('chaos-meta-strategy');
+      const metaTokens = document.getElementById('chaos-meta-tokens');
+      const metaLatency = document.getElementById('chaos-meta-latency');
+
+      let originalBtnContent = '';
+      if (btn) {
+        originalBtnContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="inline-block animate-spin mr-1">⚙</span> Infiltrating...';
+      }
+
+      if (statusPill) {
+        statusPill.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse';
+        statusPill.innerText = 'FAULT INJECTED & RESILIENCE PROBE ACTIVE';
+      }
+
+      if (logsBox) {
+        logsBox.innerHTML = `<div class="text-amber-400 font-bold">> [INITIALIZING] Triggering chaos experiment '${experimentId}' against live Sentry pipeline...</div>`;
+      }
+
+      try {
+        const res = await fetch('/api/chaos/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ experiment_id: experimentId })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          if (logsBox) {
+            logsBox.innerHTML = '';
+            data.logs.forEach((logLine) => {
+              const div = document.createElement('div');
+              if (logLine.includes('[FAULT INJECTION]')) {
+                div.className = 'text-rose-400 font-bold';
+              } else if (logLine.includes('[SELF-HEAL]') || logLine.includes('[OPTIMIZATION]')) {
+                div.className = 'text-emerald-400 font-bold';
+              } else if (logLine.includes('[CIRCUIT BREAKER]')) {
+                div.className = 'text-amber-400 font-bold';
+              } else {
+                div.className = 'text-slate-300';
+              }
+              div.innerText = `> ${logLine}`;
+              logsBox.appendChild(div);
+            });
+
+            // Append summary outcome
+            const summaryDiv = document.createElement('div');
+            summaryDiv.className = 'pt-2 text-sky-400 border-t border-slate-800/80 font-bold';
+            summaryDiv.innerText = `✔ Outcome: ${data.outcome_summary}`;
+            logsBox.appendChild(summaryDiv);
+            logsBox.scrollTop = logsBox.scrollHeight;
+          }
+
+          if (metaBox) metaBox.classList.remove('hidden');
+          if (metaStrategy) metaStrategy.innerText = data.mitigation_strategy;
+          if (metaTokens) metaTokens.innerText = `+${data.tokens_saved_estimate.toLocaleString()} tokens ($ saved)`;
+          if (metaLatency) metaLatency.innerText = `${data.latency_ms} ms`;
+
+          if (statusPill) {
+            if (data.circuit_breaker_triggered) {
+              statusPill.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20';
+              statusPill.innerText = 'CIRCUIT BREAKER TRIPPED (SELF-HALTED)';
+            } else if (data.survived) {
+              statusPill.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+              statusPill.innerText = data.degraded_mode ? 'DEGRADED & GRACEFULLY PRESERVED' : 'SURVIVED & SELF-HEALED';
+            } else {
+              statusPill.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20';
+              statusPill.innerText = 'FAIL: RESILIENCE BREACH';
+            }
+          }
+
+          refreshChaosMetrics();
+          refreshStats();
+          refreshAudit();
+        } else {
+          if (logsBox) {
+            logsBox.innerHTML += `<div class="text-rose-500 font-bold">> [ERROR] Experiment failed: ${data.error || 'Server error'}</div>`;
+          }
+        }
+      } catch (err) {
+        if (logsBox) {
+          logsBox.innerHTML += `<div class="text-rose-500 font-bold">> [NETWORK ERROR] Connection to sentry failed.</div>`;
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalBtnContent;
+          lucide.createIcons();
+        }
       }
     }
   </script>

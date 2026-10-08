@@ -188,8 +188,52 @@ async fn test_web_app_state_and_vector_inspection() {
     assert!(!bad_v.passed);
 
     let auth = novasentry::web::auth::AuthDb::new(":memory:").unwrap();
-    let state = novasentry::web::WebAppState { sentry: engine, auth };
+    let chaos = std::sync::Arc::new(novasentry::components::ChaosEngine::new());
+    let state = novasentry::web::WebAppState { sentry: engine, auth, chaos };
     let _router = novasentry::web::create_router(state);
 }
+
+#[tokio::test]
+async fn test_chaos_engine_experiments_and_self_healing() {
+    let embedder = std::sync::Arc::new(novasentry::components::MockEmbedder::new(384));
+    let store = std::sync::Arc::new(novasentry::components::InMemoryVectorStore::new());
+    let retriever = std::sync::Arc::new(novasentry::components::HybridRetriever::new(embedder.clone(), store.clone()));
+    let generator = std::sync::Arc::new(novasentry::components::MockLlmGenerator::new("NovaSentry-Reasoner-v1"));
+    let chunker = std::sync::Arc::new(novasentry::components::RecursiveCharacterChunker::default());
+    let guardrail = std::sync::Arc::new(novasentry::components::NovaGuardrail::default());
+
+    let sentry = std::sync::Arc::new(
+        novasentry::components::SentryEngine::new(chunker, embedder, store, retriever, generator)
+            .with_guardrail(guardrail)
+    );
+
+    let chaos = novasentry::components::ChaosEngine::new();
+    let experiments = chaos.list_experiments();
+    assert_eq!(experiments.len(), 6);
+
+    // 1. Test Prompt Injection Isolation
+    let res_inj = chaos.run_experiment(&sentry, "indirect_prompt_injection").await.unwrap();
+    assert!(res_inj.survived);
+    assert_eq!(res_inj.experiment_id, "indirect_prompt_injection");
+    assert!(res_inj.tokens_saved_estimate > 0);
+
+    // 2. Test Infinite Loop Circuit Breaker
+    let res_loop = chaos.run_experiment(&sentry, "infinite_loop_breaker").await.unwrap();
+    assert!(res_loop.survived);
+    assert!(res_loop.circuit_breaker_triggered);
+    assert_eq!(res_loop.tokens_saved_estimate, 35000);
+
+    // 3. Test Schema Breakdown Resilience
+    let res_schema = chaos.run_experiment(&sentry, "schema_breakdown").await.unwrap();
+    assert!(res_schema.survived);
+
+    // 4. Test Metrics Accumulation
+    let metrics = chaos.get_metrics().await;
+    assert_eq!(metrics.total_simulations, 3);
+    assert_eq!(metrics.successful_self_heals, 3);
+    assert_eq!(metrics.circuit_breaker_trips, 1);
+    assert!(metrics.estimated_tokens_preserved >= 35000);
+}
+
 
 

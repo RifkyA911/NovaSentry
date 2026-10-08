@@ -85,10 +85,30 @@ flowchart LR
 - Status node dinamis (`PASSED`, `BLOCKED`, `PROCESSING`).
 - Tombol simulasi 1-klik untuk menguji skenario normal maupun pencegatan serangan manipulasi prompt.
 
-### 3. 🎨 Desain Enterprise Soft 3D & Pemisahan Menu yang Rapi
+### 3. 🧪 Lab Agentic Chaos Engineering & Self-Correction
+- **Injeksi Kegagalan Kognitif & Semantik**: Menguji ketahanan multi-agen terhadap kebocoran instruksi, banjir data tak berguna (*context saturation*), dan pemadaman penyedia API model.
+- **Circuit Breaker Biaya & Loop Tak Hingga**: Menghentikan putaran penalaran berulang secara otomatis pada ambang batas kedalaman $\le 3$ untuk mencegah tagihan token API yang membengkak.
+- **Standar Keandalan Enterprise**: Dirancang selaras dengan panduan keandalan industri seperti **Monetary Authority of Singapore (MAS) TRM** dan **NIST AI Risk Management Framework (AI RMF)**.
+
+### 4. 🎨 Desain Enterprise Soft 3D & Pemisahan Menu yang Rapi
 - **Ikon Vektor 3D**: Ikon perisai bervolume dan bola inti bersinar dengan aksen Carrot Orange (`#ea580c` ➔ `#f97316` ➔ `#fb923c`).
 - **Mode Gelap & Terang**: Kontras teks tinggi yang terbaca jelas di mode terang maupun gelap.
 - **Dashboard Murni**: Dashboard fokus menyajikan metrik KPI, status sensor, dan tabel aktivitas terkini, sementara dokumentasi lengkap dipisahkan ke menu tersendiri (**System Guide & Docs**).
+
+---
+
+## 🧪 Eksperimen Agentic Chaos Engineering
+
+Alat *chaos engineering* tradisional (seperti Chaos Mesh atau Gremlin) hanya menguji koneksi jaringan dan *restart* kontainer, namun **tidak dapat menyimulasikan kegagalan logika atau manipulasi semantik**. NovaSentry menghadirkan 6 skenario gangguan otomatis:
+
+| ID Eksperimen | Skenario Gangguan | Sasaran Komponen | Tolok Ukur (Steady State KPI) | Mekanisme Pemulihan Mandiri |
+| :--- | :--- | :--- | :--- | :--- |
+| `indirect_prompt_injection` | Instruksi terselubung di log/kode | Guardrail & Auditor | 0% manipulasi kognitif; isolasi agen | Auditor mengisolasi konteks berbahaya dan membuang ke karantina |
+| `context_saturation` | 50.000+ karakter sampah debug | Recursive Chunker | Kapasitas memori &lt; 70% | Pemecah teks memfilter noise sebelum dikirim ke model LLM |
+| `provider_rate_limit` | Simulasi kuota habis (HTTP 429) | Model Router | Transisi cadangan &lt; 500ms | Beralih secara mulus ke model penalaran lokal tanpa kegagalan |
+| `infinite_loop_breaker` | Paradoks logika berulang | Loop Guard Graph | Menghentikan loop pada kedalaman $\le 3$ | *Circuit breaker* memutus eksekusi dan menghemat puluhan ribu token |
+| `schema_breakdown` | Data non-UTF & JSON rusak | Serde Parser | 100% kepatuhan skema | Sanitizer menormalkan input tanpa memicu crash aplikasi |
+| `dependency_blackout` | Pemadaman koneksi ke database CVE | Knowledge Store | 0% henti layanan | Sistem beralih ke snapshot lokal di memori vektor 384 dimensi |
 
 ---
 
@@ -173,6 +193,9 @@ Menguji seluruh 9 unit test dan integrasi (vektor kosinus semantik, deteksi inje
 | `POST` | `/api/investigate` | Petugas | Mengirim laporan kejadian untuk dianalisis oleh RAG |
 | `GET` | `/api/audit` | Petugas | Melihat seluruh buku rekaman insiden |
 | `POST` | `/api/guardrail/test` | Petugas | Menguji aturan filter guardrail secara mandiri |
+| `GET` | `/api/chaos/experiments` | Publik | Mendapatkan katalog 6 skenario eksperimen chaos multi-agen |
+| `POST` | `/api/chaos/run` | Publik | Menyuntikkan gangguan chaos dan menjalankan protokol pemulihan mandiri |
+| `GET` | `/api/chaos/metrics` | Publik | Mengambil telemetri ketahanan, penghematan token, dan status circuit breaker |
 
 ---
 

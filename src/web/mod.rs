@@ -23,6 +23,7 @@ pub const LOGO_SVG: &str = include_str!("assets/logo.svg");
 pub struct WebAppState {
     pub sentry: Arc<SentryEngine>,
     pub auth: auth::AuthDb,
+    pub chaos: Arc<crate::components::chaos::ChaosEngine>,
 }
 
 #[derive(Serialize)]
@@ -106,6 +107,11 @@ pub struct AuthResponse {
     pub message: Option<String>,
 }
 
+#[derive(Deserialize)]
+pub struct ChaosRunRequest {
+    pub experiment_id: String,
+}
+
 pub fn create_router(state: WebAppState) -> Router {
     Router::new()
         .route("/", get(serve_index))
@@ -115,6 +121,10 @@ pub fn create_router(state: WebAppState) -> Router {
         .route("/api/investigate", post(investigate_alert))
         .route("/api/audit", get(get_audit_trail))
         .route("/api/guardrail/test", post(test_guardrail))
+        // Agentic Chaos Engineering Endpoints
+        .route("/api/chaos/experiments", get(get_chaos_experiments))
+        .route("/api/chaos/run", post(run_chaos))
+        .route("/api/chaos/metrics", get(get_chaos_metrics))
         // Authentication Endpoints (SQLite Powered)
         .route("/api/auth/register", post(auth_register))
         .route("/api/auth/login", post(auth_login))
@@ -311,6 +321,32 @@ async fn test_guardrail(
 }
 
 // ==========================================
+// AGENTIC CHAOS ENGINEERING HANDLERS
+// ==========================================
+
+async fn get_chaos_experiments(State(state): State<WebAppState>) -> impl IntoResponse {
+    Json(state.chaos.list_experiments())
+}
+
+async fn get_chaos_metrics(State(state): State<WebAppState>) -> impl IntoResponse {
+    let metrics = state.chaos.get_metrics().await;
+    Json(metrics)
+}
+
+async fn run_chaos(
+    State(state): State<WebAppState>,
+    Json(payload): Json<ChaosRunRequest>,
+) -> impl IntoResponse {
+    match state.chaos.run_experiment(&state.sentry, &payload.experiment_id).await {
+        Ok(result) => (StatusCode::OK, Json(serde_json::to_value(result).unwrap_or_default())).into_response(),
+        Err(err) => (
+            StatusCode::BAD_REQUEST,
+            Json(serde_json::json!({ "error": err })),
+        ).into_response(),
+    }
+}
+
+// ==========================================
 // SQLITE AUTH HANDLERS
 // ==========================================
 
@@ -425,7 +461,8 @@ pub async fn start_server(
     db_path: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let auth = auth::AuthDb::new(db_path)?;
-    let state = WebAppState { sentry, auth };
+    let chaos = Arc::new(crate::components::chaos::ChaosEngine::new());
+    let state = WebAppState { sentry, auth, chaos };
     let router = create_router(state);
 
     println!("⚡ NovaSentry Web Server binding to http://{}", addr);

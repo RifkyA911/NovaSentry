@@ -85,10 +85,30 @@ flowchart LR
 - Dynamic node states (`PASSED`, `BLOCKED`, `PROCESSING`) reflecting real-time pipeline behavior.
 - Interactive 1-click simulation triggers for both normal flows and adversarial prompt injection interception.
 
-### 3. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity
+### 3. 🧪 Agentic Chaos Engineering & Self-Correction Lab
+- **Cognitive & Semantic Fault Injections**: Proactively stress-tests multi-agent systems against failure modes traditional chaos tools cannot capture (cognitive drift, runaway loops, noise floods).
+- **Hard Cost-Control Circuit Breakers**: Halts cyclic reasoning loops at depth threshold $\le 3$, preventing runaway cloud API token consumption.
+- **Enterprise Reliability Standards**: Designed in alignment with **Monetary Authority of Singapore (MAS) Technology Risk Management (TRM)** guidelines and **NIST AI Risk Management Framework (AI RMF)**.
+
+### 4. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity
 - **True 3D Vector Icon**: Volumetric claymorphic shield and glowing core orb with ambient occlusion and specular highlights in Carrot Orange (`#ea580c` ➔ `#f97316` ➔ `#fb923c`).
 - **Dark & Light Mode**: WCAG-compliant high-contrast navigation styling across cards, forms, and audit tables.
 - **Clean Separation of Concerns**: The Dashboard focuses exclusively on live metrics, KPIs, and sensor streams, while extensive architectural documentation resides in its own dedicated **System Guide & Docs** menu.
+
+---
+
+## 🧪 Agentic Chaos Engineering: Disruption Experiments
+
+Traditional chaos engineering (e.g., Chaos Mesh, Gremlin) tests network partitions and container restarts, but **cannot simulate semantic, cognitive, or reasoning failures**. NovaSentry addresses this critical gap with 6 automated chaos disruption scenarios:
+
+| Experiment ID | Disruption Scenario | Target Layer | Steady-State Hypothesis (KPI) | Self-Healing Mechanism |
+| :--- | :--- | :--- | :--- | :--- |
+| `indirect_prompt_injection` | Concealed instruction inside scanned code/telemetry | Ingress Guard & Auditor | 0% cognitive bypass; context isolation | Dual-agent perimeter isolates malicious context, logs audit event, and drops to quarantine |
+| `context_saturation` | 50,000+ characters of repetitive debug noise | Recursive Chunker | Context headroom preserved &lt; 70% | Heuristic filtering & chunking bounds semantic payload without memory blowup |
+| `provider_rate_limit` | Mock HTTP 429 quota exhaustion on primary LLM | Model Gateway | Seamless failover in &lt; 500ms | Circuit router switches transparently to secondary offline reasoning model |
+| `infinite_loop_breaker` | Self-referential cyclic paradox prompts | State Graph Loop Guard | Halts runaway loops at depth $\le 3$ | Hard recursion circuit breaker cuts off execution, preserving token budget |
+| `schema_breakdown` | Non-UTF control bytes, emojis & unclosed JSON | Serde Parsers | 100% structured schema compliance | Defensive sanitizer normalizes input and coerces into typed structs |
+| `dependency_blackout` | Network partition on external CVE gateways | Knowledge Store | 0% pipeline crash; graceful degradation | Engine smoothly degrades to local in-memory 384-dim vector store snapshot |
 
 ---
 
@@ -141,7 +161,7 @@ cargo run -- --port 8080
 
 ### 2. Run Headless Terminal CLI Demo
 
-To execute the 5-stage automated investigation simulation in your terminal:
+To execute the automated investigation simulation in your terminal:
 
 ```bash
 cargo run -- --demo
@@ -153,7 +173,7 @@ cargo run -- --demo
 cargo test
 ```
 
-Verifies all 9 unit and integration tests (vector cosine math, prompt injection detection, hybrid RAG retrieval, and SQLite authentication).
+Verifies all **10 unit and integration tests** (vector cosine math, prompt injection detection, hybrid RAG retrieval, chaos engine self-healing, and SQLite authentication).
 
 ---
 
@@ -173,6 +193,9 @@ Verifies all 9 unit and integration tests (vector cosine math, prompt injection 
 | `POST` | `/api/investigate` | Officer | Dispatches raw telemetry for automated RAG triage |
 | `GET` | `/api/audit` | Officer | Retrieves forensic compliance logs |
 | `POST` | `/api/guardrail/test` | Officer | Tests ingress/egress guardrails independently |
+| `GET` | `/api/chaos/experiments` | Public | Lists all 6 available chaos engineering scenarios |
+| `POST` | `/api/chaos/run` | Public | Injects a chaos disruption and executes self-healing verification |
+| `GET` | `/api/chaos/metrics` | Public | Retrieves resilience KPIs, tokens preserved & breaker counts |
 
 ---
 
@@ -192,7 +215,7 @@ NovaSentry/
 │   ├── lib.rs                <- Modular library roots
 │   ├── main.rs               <- Server and CLI runner with dotenvy support
 │   ├── core/                 <- Data contracts and async traits
-│   ├── components/           <- Chunker, Embedder, HybridRetriever, Guardrail, Auditor
+│   ├── components/           <- Chunker, Embedder, HybridRetriever, Guardrail, Auditor, ChaosEngine
 │   ├── engine/               <- SentryEngine orchestrator
 │   └── web/                  <- Axum web service
 │       ├── mod.rs            <- REST router and static asset handlers
