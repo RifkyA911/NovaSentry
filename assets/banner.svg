@@ -79,77 +79,36 @@
   <rect x="1.5" y="1.5" width="997" height="317" rx="18.5" fill="none" stroke="#f97316" stroke-width="1.2" stroke-opacity="0.25" />
 
   <!-- =============================== -->
-  <!-- LEFT: TRUE 3D LOGO ARTWORK      -->
+  <!-- LEFT: SOFT-BODY 3D BALL ARTWORK -->
   <!-- =============================== -->
-  <g transform="translate(48, 38)">
-    <g filter="url(#b3d-shadow)">
-      <!-- 3D Outer Shield Rim -->
-      <path d="M 120 18
-               C 176 18 222 48 222 118
-               C 222 184 168 232 120 252
-               C 72 232 18 184 18 118
-               C 18 48 64 18 120 18 Z"
-            fill="url(#b3d-rim)" />
+  <g transform="translate(68, 30) scale(0.46)">
+    <!-- Floor Shadow -->
+    <ellipse cx="256" cy="442" rx="150" ry="26" fill="#140300" opacity="0.6" filter="url(#softGlow)" />
 
-      <!-- 3D Front Facet Plate -->
-      <path d="M 120 24
-               C 170 24 214 52 214 116
-               C 214 178 164 224 120 242
-               C 76 224 26 178 26 116
-               C 26 52 70 24 120 24 Z"
-            fill="url(#b3d-face)" />
+    <!-- Rear Loop -->
+    <path d="M 172 178 C 134 118 200 62 284 76 C 362 88 412 168 376 254 C 346 326 264 362 208 328 C 168 304 184 246 226 232 C 278 214 316 168 288 126 C 264 92 204 104 172 178 Z"
+          fill="url(#b3d-face)" />
 
-      <!-- Top Cushion Glaze -->
-      <path d="M 120 26
-               C 162 26 202 48 206 98
-               C 192 54 158 34 120 34
-               C 82 34 48 54 34 98
-               C 38 48 78 26 120 26 Z"
-            fill="#ffffff"
-            opacity="0.45" />
-    </g>
+    <!-- Lower Bulb -->
+    <path d="M 148 248 C 112 288 116 358 172 404 C 230 452 334 446 384 388 C 432 332 408 262 344 246 C 284 232 232 278 198 274 C 174 270 160 258 148 248 Z"
+          fill="url(#b3d-rim)" />
 
-    <!-- Recessed Pocket Basin -->
-    <path d="M 120 50
-             C 160 50 194 74 194 124
-             C 194 172 154 206 120 222
-             C 86 206 46 172 46 124
-             C 46 74 80 50 120 50 Z"
-          fill="#0c101d"
-          stroke="#ff6a00"
-          stroke-width="2"
-          stroke-opacity="0.4" />
+    <!-- Main Central Soft-Body Sphere -->
+    <path d="M 216 104 C 310 72 418 132 416 238 C 414 334 322 404 224 388 C 134 374 88 278 112 188 C 130 122 172 118 216 104 Z"
+          fill="url(#b3d-sphere)" filter="url(#softGlow)" />
 
-    <!-- 3D Torus Ring (Back Half) -->
-    <ellipse cx="120" cy="126" rx="64" ry="24"
-             fill="none"
-             stroke="url(#b3d-torus-back)"
-             stroke-width="7"
-             stroke-dasharray="110 120"
-             stroke-dashoffset="60"
-             transform="rotate(-28 120 126)" />
+    <!-- Top Cushion Crest -->
+    <path d="M 184 108 C 236 82 322 96 356 156 C 386 210 354 272 296 286 C 238 300 184 256 166 204 C 152 162 158 122 184 108 Z"
+          fill="url(#b3d-face)" />
 
-    <!-- Floating 3D AI Sphere -->
-    <circle cx="120" cy="125" r="40" fill="url(#b3d-sphere)" filter="url(#softGlow)" />
-    <!-- Sphere Glaze Reflection -->
-    <ellipse cx="106" cy="105" rx="15" ry="8" fill="#ffffff" opacity="0.6" transform="rotate(-25 106 105)" />
-    <circle cx="116" cy="98" r="3" fill="#ffffff" opacity="0.9" />
+    <!-- Center Iris Eye -->
+    <circle cx="260" cy="230" r="28" fill="#140400" />
+    <circle cx="260" cy="230" r="14" fill="#ff7a1a" filter="url(#softGlow)" />
+    <circle cx="260" cy="230" r="6" fill="#ffffff" />
 
-    <!-- 3D Torus Ring (Front Half) -->
-    <ellipse cx="120" cy="126" rx="64" ry="24"
-             fill="none"
-             stroke="url(#b3d-torus-front)"
-             stroke-width="7"
-             stroke-linecap="round"
-             stroke-dasharray="110 120"
-             stroke-dashoffset="-50"
-             transform="rotate(-28 120 126)"
-             filter="url(#softGlow)" />
-
-    <!-- AI Iris Center -->
-    <circle cx="120" cy="125" r="14" fill="#0c0704" stroke="#ff9d42" stroke-width="1.8" />
-    <circle cx="120" cy="125" r="6" fill="#ff6a00" />
-    <circle cx="120" cy="125" r="2.5" fill="#ffffff" />
+    <!-- Glossy Specular Arc -->
+    <ellipse cx="218" cy="134" rx="28" ry="14" fill="#ffffff" opacity="0.9" transform="rotate(-25 218 134)" />
+    <circle cx="236" cy="126" r="6" fill="#ffffff" opacity="0.95" />
   </g>
 
   <!-- =============================== -->

@@ -531,7 +531,7 @@
                   <i data-lucide="git-merge" class="w-5 h-5 text-carrot-500"></i>
                   <span>Autonomous Pipeline Flow Visualizer</span>
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Real-time packet inspection through Guardrail, Vector Store, LLM, and Compliance</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Dynamic Bezier routing connecting Ingress Sensor, Guardrails, Hybrid RAG, LLM Reasoner, and Audit Ledger</p>
               </div>
 
               <!-- Simulation Trigger Buttons -->
@@ -547,99 +547,108 @@
               </div>
             </div>
 
-            <!-- Canvas Container -->
-            <div id="flow-canvas-container" class="w-full h-[520px] rounded-2xl border border-slate-200 dark:border-slate-800/80 relative overflow-hidden mesh-bg-dark flex items-center justify-center">
+            <!-- Canvas Container with Dynamic Scroll & SVG Wiring -->
+            <div id="flow-canvas-container" onscroll="updateFlowWires()" class="w-full h-[540px] rounded-2xl border border-slate-200 dark:border-slate-800/80 relative overflow-x-auto overflow-y-hidden mesh-bg-dark">
 
-              <!-- SVG Animated Bezier Connectors -->
-              <svg id="flow-wires" class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Wire 1: Sensor to Ingress -->
-                <path id="wire-1" d="M 170 260 C 240 260, 240 260, 310 260" fill="none" stroke="#ea580c" stroke-width="2.5" class="wire-active" stroke-opacity="0.8"/>
-                <!-- Wire 2: Ingress to RAG (Safe) -->
-                <path id="wire-2" d="M 450 260 C 510 260, 510 160, 570 160" fill="none" stroke="#38bdf8" stroke-width="2.5" class="wire-active" stroke-opacity="0.8"/>
-                <!-- Wire 2-Blocked: Ingress to Quarantine -->
-                <path id="wire-2b" d="M 450 260 C 510 260, 510 370, 570 370" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="4,4" stroke-opacity="0.4"/>
-                <!-- Wire 3: RAG to Reasoner -->
-                <path id="wire-3" d="M 710 160 C 760 160, 760 160, 810 160" fill="none" stroke="#fbbf24" stroke-width="2.5" class="wire-active" stroke-opacity="0.8"/>
-                <!-- Wire 4: Reasoner to Egress -->
-                <path id="wire-4" d="M 950 160 C 1000 160, 1000 260, 1050 260" fill="none" stroke="#a855f7" stroke-width="2.5" class="wire-active" stroke-opacity="0.8"/>
-                <!-- Wire 5: Egress to Audit -->
-                <path id="wire-5" d="M 1190 260 C 1240 260, 1240 260, 1290 260" fill="none" stroke="#10b981" stroke-width="2.5" class="wire-active" stroke-opacity="0.8"/>
+              <!-- SVG Animated Dynamic Bezier Connectors -->
+              <svg id="flow-wires" class="absolute inset-0 pointer-events-none" style="min-width: 1250px; width: 100%; height: 100%;" xmlns="http://www.w3.org/2000/svg">
+                <!-- Wires dynamically computed from node port coordinates -->
+                <path id="wire-1" fill="none" stroke="#ea580c" stroke-width="2.5" class="wire-active" stroke-opacity="0.85"/>
+                <path id="wire-2" fill="none" stroke="#38bdf8" stroke-width="2.5" class="wire-active" stroke-opacity="0.85"/>
+                <path id="wire-2b" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4,4" stroke-opacity="0.4"/>
+                <path id="wire-3" fill="none" stroke="#fbbf24" stroke-width="2.5" class="wire-active" stroke-opacity="0.85"/>
+                <path id="wire-4" fill="none" stroke="#a855f7" stroke-width="2.5" class="wire-active" stroke-opacity="0.85"/>
+                <path id="wire-5" fill="none" stroke="#10b981" stroke-width="2.5" class="wire-active" stroke-opacity="0.85"/>
               </svg>
 
               <!-- Node Cards Layout -->
-              <div class="relative w-full max-w-6xl h-full flex items-center justify-between px-6 z-10 overflow-x-auto gap-8">
+              <div id="flow-nodes-wrapper" class="relative min-w-[1250px] h-full flex items-center justify-between px-10 z-10 gap-10">
 
                 <!-- NODE 1: INGRESS TELEMETRY -->
-                <div id="node-1" class="w-40 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-carrot-500 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                <div id="node-1" class="relative w-44 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-carrot-500 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-carrot-500/10 text-carrot-500">1. SENSOR</span>
                     <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                   </div>
                   <div class="font-bold text-xs text-slate-900 dark:text-white">Telemetry Sensor</div>
-                  <div class="text-[10px] text-slate-400 mt-1">k8s-audit &amp; WAF Log</div>
+                  <div class="text-[10px] text-slate-400 mt-1">k8s-audit &amp; WAF Ingress</div>
+                  <!-- Output Port Pin -->
+                  <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-carrot-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                 </div>
 
                 <!-- NODE 2: INGRESS GUARDRAIL -->
-                <div id="node-2" class="w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                <div id="node-2" class="relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                  <!-- Input Port Pin -->
+                  <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-carrot-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500">2. GUARDRAIL</span>
                     <i data-lucide="shield" class="w-3.5 h-3.5 text-rose-400"></i>
                   </div>
                   <div class="font-bold text-xs text-slate-900 dark:text-white">Ingress Filter</div>
-                  <div class="text-[10px] text-slate-400 mt-1">Prompt Injection Check</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Prompt Injection &amp; Override</div>
+                  <!-- Output Port Pin -->
+                  <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-sky-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                 </div>
 
                 <!-- SPLIT MIDDLE: RAG OR QUARANTINE -->
-                <div class="flex flex-col gap-16">
+                <div class="flex flex-col gap-14">
                   <!-- NODE 3A: HYBRID RAG -->
-                  <div id="node-3" class="w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                  <div id="node-3" class="relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                    <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-sky-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                     <div class="flex items-center justify-between mb-2">
                       <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-500">3A. RAG STORE</span>
                       <i data-lucide="database" class="w-3.5 h-3.5 text-sky-400"></i>
                     </div>
                     <div class="font-bold text-xs text-slate-900 dark:text-white">Hybrid Retrieval</div>
-                    <div class="text-[10px] text-slate-400 mt-1">Cosine &amp; Lexical RRF</div>
+                    <div class="text-[10px] text-slate-400 mt-1">Dense + Sparse BM25 RRF</div>
+                    <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                   </div>
 
-                  <!-- NODE 3B: QUARANTINE -->
-                  <div id="node-quarantine" class="w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-800 opacity-40 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                  <!-- NODE 3B: QUARANTINE DROP -->
+                  <div id="node-quarantine" class="relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-800 opacity-50 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                    <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-rose-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                     <div class="flex items-center justify-between mb-2">
                       <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500">QUARANTINE</span>
                       <i data-lucide="alert-octagon" class="w-3.5 h-3.5 text-rose-500"></i>
                     </div>
-                    <div class="font-bold text-xs text-rose-400">Quarantine Drop</div>
+                    <div class="font-bold text-xs text-rose-500 dark:text-rose-400">Quarantine Drop</div>
                     <div class="text-[10px] text-slate-400 mt-1">Direct Alarm Escalate</div>
                   </div>
                 </div>
 
                 <!-- NODE 4: LLM REASONER -->
-                <div id="node-4" class="w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                <div id="node-4" class="relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                  <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500">4. REASONER</span>
                     <i data-lucide="cpu" class="w-3.5 h-3.5 text-amber-400"></i>
                   </div>
                   <div class="font-bold text-xs text-slate-900 dark:text-white">Grounded LLM</div>
-                  <div class="text-[10px] text-slate-400 mt-1">Synthesis Mitigation</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Context Mitigation Synthesis</div>
+                  <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-purple-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                 </div>
 
                 <!-- NODE 5: EGRESS GUARDRAIL -->
-                <div id="node-5" class="w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                <div id="node-5" class="relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                  <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-purple-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-500">5. EGRESS</span>
                     <i data-lucide="lock" class="w-3.5 h-3.5 text-purple-400"></i>
                   </div>
                   <div class="font-bold text-xs text-slate-900 dark:text-white">Secret Redactor</div>
-                  <div class="text-[10px] text-slate-400 mt-1">Token &amp; Key Filter</div>
+                  <div class="text-[10px] text-slate-400 mt-1">Bearer &amp; AWS Key Redaction</div>
+                  <div class="absolute -right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                 </div>
 
                 <!-- NODE 6: COMPLIANCE AUDIT -->
-                <div id="node-6" class="w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                <div id="node-6" class="relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300">
+                  <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0c101d] shadow"></div>
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">6. AUDIT</span>
                     <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400"></i>
                   </div>
                   <div class="font-bold text-xs text-slate-900 dark:text-white">Forensic Audit</div>
-                  <div class="text-[10px] text-slate-400 mt-1">SQLite &amp; Ticket Delivery</div>
+                  <div class="text-[10px] text-slate-400 mt-1">SQLite &amp; Incident Ticket</div>
                 </div>
 
               </div>
@@ -804,42 +813,176 @@
         </section>
 
         <!-- ============================================== -->
-        <!-- VIEW 6: COMPLIANCE AUDIT                       -->
+        <!-- VIEW 6: COMPLIANCE AUDIT & FORENSIC LOGS       -->
         <!-- ============================================== -->
         <section id="view-audit" class="view-panel hidden space-y-6">
           <div class="p-6 rounded-3xl bg-white dark:bg-[#0f1422] border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 class="font-black text-lg text-slate-900 dark:text-white flex items-center gap-2">
                   <i data-lucide="clipboard-list" class="w-5 h-5 text-carrot-500"></i>
                   <span>Forensic Compliance Audit Trail</span>
                 </h3>
-                <p class="text-xs text-slate-500 dark:text-slate-400">Zero-race condition event log recording incident responses, latencies, and risk scores</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Zero-race condition event log recording incident responses, latencies, rule triggers, and risk scores</p>
               </div>
-              <button onclick="refreshAudit()" class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-semibold flex items-center gap-2">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                <span>Refresh Logs</span>
-              </button>
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <button onclick="refreshAudit()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>Refresh Logs</span>
+                </button>
+              </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <!-- Advanced Filter & Search Toolbar -->
+            <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Search Input -->
+                <div class="relative sm:col-span-2 lg:col-span-1">
+                  <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                  <input type="text" id="audit-filter-search" oninput="applyAuditFilters()" placeholder="Search action, flag, ID..."
+                         class="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-carrot-500">
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                  <select id="audit-filter-status" onchange="applyAuditFilters()"
+                          class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-carrot-500">
+                    <option value="all">All Verdicts</option>
+                    <option value="passed">PASSED (Verified)</option>
+                    <option value="blocked">BLOCKED (Interceptions)</option>
+                  </select>
+                </div>
+
+                <!-- Risk Filter -->
+                <div>
+                  <select id="audit-filter-risk" onchange="applyAuditFilters()"
+                          class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-carrot-500">
+                    <option value="all">All Risk Levels</option>
+                    <option value="critical">Critical Risk (&gt; 0.70)</option>
+                    <option value="medium">Medium Risk (0.30 - 0.70)</option>
+                    <option value="low">Low Risk (&lt; 0.30)</option>
+                  </select>
+                </div>
+
+                <!-- Sort Order -->
+                <div>
+                  <select id="audit-filter-sort" onchange="applyAuditFilters()"
+                          class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:border-carrot-500">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="risk-desc">Highest Risk First</option>
+                    <option value="latency-asc">Lowest Latency First</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Filter Meta & Count Summary -->
+              <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono pt-1 border-t border-slate-200/80 dark:border-slate-800/80">
+                <span id="audit-filter-summary">Showing 0 of 0 events</span>
+                <button onclick="resetAuditFilters()" class="text-carrot-600 dark:text-carrot-400 hover:underline font-bold">
+                  Reset All Filters
+                </button>
+              </div>
+            </div>
+
+            <!-- Enhanced Audit Table -->
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
               <table class="w-full text-left text-xs font-mono">
                 <thead>
-                  <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-400 text-[11px]">
-                    <th class="py-2.5 px-3">TIMESTAMP</th>
-                    <th class="py-2.5 px-3">INCIDENT / ACTION</th>
-                    <th class="py-2.5 px-3">RESULT</th>
-                    <th class="py-2.5 px-3">RISK SCORE</th>
-                    <th class="py-2.5 px-3">LATENCY</th>
+                  <tr class="bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[11px]">
+                    <th class="py-3 px-3">TIMESTAMP</th>
+                    <th class="py-3 px-3">INCIDENT / ACTION DESCRIPTION</th>
+                    <th class="py-3 px-3">VERDICT</th>
+                    <th class="py-3 px-3">RISK GAUGE</th>
+                    <th class="py-3 px-3">LATENCY</th>
+                    <th class="py-3 px-3">RULE FLAGS</th>
+                    <th class="py-3 px-3 text-right">INSPECT</th>
                   </tr>
                 </thead>
-                <tbody id="audit-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60">
-                  <tr><td colspan="5" class="py-8 text-center text-slate-400">No audit events recorded yet. Run an investigation to generate records.</td></tr>
+                <tbody id="audit-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-transparent">
+                  <tr><td colspan="7" class="py-8 text-center text-slate-400">Loading forensic audit events...</td></tr>
                 </tbody>
               </table>
             </div>
           </div>
         </section>
+
+        <!-- MODAL: FORENSIC LOG DETAIL INSPECTOR -->
+        <div id="audit-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <div class="w-full max-w-2xl bg-white dark:bg-[#0c101d] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div class="flex items-center gap-2.5">
+                <div class="p-2 rounded-xl bg-carrot-500/10 text-carrot-500">
+                  <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h4 class="font-black text-base text-slate-900 dark:text-white">Forensic Audit Log Inspector</h4>
+                  <p class="text-xs text-slate-400">Tamper-evident security event breakdown</p>
+                </div>
+              </div>
+              <button onclick="closeAuditDetail()" class="p-2 rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Details Content Grid -->
+            <div class="space-y-4 text-xs font-mono">
+              <!-- Event ID & Timestamp -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div class="text-[10px] text-slate-400 uppercase font-bold">Event ID (UUIDv4)</div>
+                  <div class="flex items-center justify-between mt-1">
+                    <span id="detail-id" class="font-bold text-slate-900 dark:text-white truncate">--</span>
+                    <button onclick="copyDetailField('id')" class="text-carrot-500 hover:underline text-[10px]">Copy</button>
+                  </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div class="text-[10px] text-slate-400 uppercase font-bold">Recorded Timestamp</div>
+                  <div id="detail-time" class="font-bold text-slate-900 dark:text-white mt-1">--</div>
+                </div>
+              </div>
+
+              <!-- Verdict & Risk & Latency -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div class="text-[10px] text-slate-400 uppercase font-bold">Perimeter Verdict</div>
+                  <div id="detail-verdict" class="mt-1">--</div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div class="text-[10px] text-slate-400 uppercase font-bold">Assessed Risk Score</div>
+                  <div id="detail-risk" class="font-bold text-slate-900 dark:text-white mt-1">--</div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  <div class="text-[10px] text-slate-400 uppercase font-bold">Execution Latency</div>
+                  <div id="detail-latency" class="font-bold text-slate-900 dark:text-white mt-1">--</div>
+                </div>
+              </div>
+
+              <!-- Action Title -->
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div class="text-[10px] text-slate-400 uppercase font-bold mb-1">Action &amp; Target Context</div>
+                <div id="detail-action" class="font-bold text-slate-900 dark:text-white text-xs leading-relaxed">--</div>
+              </div>
+
+              <!-- Triggered Rule Flags -->
+              <div>
+                <div class="text-[10px] text-slate-400 uppercase font-bold mb-1.5">Triggered Guardrail Rule Flags</div>
+                <div id="detail-flags" class="flex flex-wrap gap-1.5">
+                  <span class="text-slate-400">None</span>
+                </div>
+              </div>
+
+              <!-- Full Raw JSON Payload -->
+              <div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400 uppercase font-bold mb-1.5">
+                  <span>Raw Forensic JSON Record</span>
+                  <button onclick="copyDetailJson()" class="text-carrot-500 hover:underline">Copy JSON</button>
+                </div>
+                <pre id="detail-json" class="p-3.5 rounded-2xl bg-slate-950 text-slate-300 text-[11px] overflow-x-auto max-h-40 border border-slate-800"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- ============================================== -->
         <!-- VIEW 7: DEDICATED SYSTEM GUIDE & DOCS          -->
@@ -975,6 +1118,9 @@
     document.addEventListener('DOMContentLoaded', async () => {
       initTheme();
       await checkAuthSession();
+      window.addEventListener('resize', () => {
+        if (activeView === 'view-flow') updateFlowWires();
+      });
       lucide.createIcons();
     });
 
@@ -1198,6 +1344,9 @@
       }
 
       updateNavStyles(viewId);
+      if (viewId === 'view-flow') {
+        setTimeout(updateFlowWires, 50);
+      }
       lucide.createIcons();
     }
 
@@ -1273,34 +1422,223 @@
       } catch (e) {}
     }
 
+    // Forensic Audit Log State & Handlers
+    let cachedAuditRecords = [];
+    let activeInspectRecord = null;
+
     async function refreshAudit() {
       try {
         const res = await fetch('/api/audit');
         if (res.ok) {
-          const logs = await res.json();
-          const tbody = document.getElementById('audit-table-body');
-          if (!tbody) return;
-
-          if (logs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">No audit events recorded yet.</td></tr>';
-            return;
-          }
-
-          tbody.innerHTML = logs.map(l => `
-            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30">
-              <td class="py-3 px-3 text-slate-500">${new Date(l.timestamp).toLocaleTimeString()}</td>
-              <td class="py-3 px-3 font-semibold text-slate-800 dark:text-slate-200">${l.action}</td>
-              <td class="py-3 px-3">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.passed ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}">
-                  ${l.passed ? 'PASSED' : 'BLOCKED'}
-                </span>
-              </td>
-              <td class="py-3 px-3">${l.risk_score.toFixed(2)}</td>
-              <td class="py-3 px-3">${l.latency_ms} ms</td>
-            </tr>
-          `).join('');
+          cachedAuditRecords = await res.json();
+          applyAuditFilters();
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('Failed to fetch audit records:', e);
+      }
+    }
+
+    function applyAuditFilters() {
+      const search = (document.getElementById('audit-filter-search')?.value || '').toLowerCase().trim();
+      const status = document.getElementById('audit-filter-status')?.value || 'all';
+      const risk = document.getElementById('audit-filter-risk')?.value || 'all';
+      const sort = document.getElementById('audit-filter-sort')?.value || 'newest';
+
+      let filtered = cachedAuditRecords.filter(item => {
+        const itemFlags = item.flags || item.rule_flags || [];
+        // Keyword Search
+        if (search) {
+          const matchAction = item.action && item.action.toLowerCase().includes(search);
+          const matchId = item.id && item.id.toLowerCase().includes(search);
+          const matchFlags = itemFlags.some(f => f.toLowerCase().includes(search));
+          if (!matchAction && !matchId && !matchFlags) return false;
+        }
+
+        // Status Filter
+        if (status === 'passed' && !item.passed) return false;
+        if (status === 'blocked' && item.passed) return false;
+
+        // Risk Filter
+        if (risk === 'critical' && item.risk_score < 0.70) return false;
+        if (risk === 'medium' && (item.risk_score < 0.30 || item.risk_score >= 0.70)) return false;
+        if (risk === 'low' && item.risk_score >= 0.30) return false;
+
+        return true;
+      });
+
+      // Sort
+      if (sort === 'newest') {
+        filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      } else if (sort === 'oldest') {
+        filtered.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      } else if (sort === 'risk-desc') {
+        filtered.sort((a, b) => b.risk_score - a.risk_score);
+      } else if (sort === 'latency-asc') {
+        filtered.sort((a, b) => a.latency_ms - b.latency_ms);
+      }
+
+      // Update Summary Counter
+      const summaryEl = document.getElementById('audit-filter-summary');
+      if (summaryEl) {
+        summaryEl.innerText = `Showing ${filtered.length} of ${cachedAuditRecords.length} events`;
+      }
+
+      // Render Table Rows
+      const tbody = document.getElementById('audit-table-body');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-12 text-center text-slate-400 font-sans">No matching audit events found. Try adjusting filters or search query.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(l => {
+        const isPassed = l.passed;
+        const riskPct = (l.risk_score * 100).toFixed(0);
+        const riskBadgeClass = l.risk_score >= 0.70
+          ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+          : l.risk_score >= 0.30
+            ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+            : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
+
+        const rowFlags = l.flags || l.rule_flags || [];
+        const flagBadges = (rowFlags.length > 0)
+          ? rowFlags.map(f => `<span class="px-1.5 py-0.5 rounded text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">${f}</span>`).join(' ')
+          : '<span class="text-slate-400 text-[10px]">None</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+            <td class="py-3 px-3 text-slate-500 whitespace-nowrap">
+              <div class="font-bold text-slate-700 dark:text-slate-300">${new Date(l.timestamp).toLocaleTimeString()}</div>
+              <div class="text-[9px] text-slate-400">${new Date(l.timestamp).toLocaleDateString()}</div>
+            </td>
+            <td class="py-3 px-3">
+              <div class="font-bold text-slate-800 dark:text-slate-200 line-clamp-2 max-w-sm">${l.action}</div>
+              <div class="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-xs">${l.id}</div>
+            </td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold ${isPassed ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}">
+                ${isPassed ? 'PASSED' : 'BLOCKED'}
+              </span>
+            </td>
+            <td class="py-3 px-3 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${riskBadgeClass}">${riskPct}%</span>
+                <div class="w-12 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                  <div class="h-full ${l.risk_score >= 0.7 ? 'bg-rose-500' : l.risk_score >= 0.3 ? 'bg-amber-500' : 'bg-emerald-500'}" style="width: ${riskPct}%"></div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-3 whitespace-nowrap text-slate-700 dark:text-slate-300 font-bold">
+              ${l.latency_ms} ms
+            </td>
+            <td class="py-3 px-3 max-w-xs">
+              <div class="flex flex-wrap gap-1">${flagBadges}</div>
+            </td>
+            <td class="py-3 px-3 text-right whitespace-nowrap">
+              <button onclick="openAuditDetail('${l.id}')" class="px-3 py-1.5 rounded-xl bg-carrot-500/10 hover:bg-carrot-500/20 text-carrot-600 dark:text-carrot-400 text-xs font-bold transition flex items-center gap-1.5 ml-auto">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                <span>Inspect</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function resetAuditFilters() {
+      const searchInput = document.getElementById('audit-filter-search');
+      const statusSelect = document.getElementById('audit-filter-status');
+      const riskSelect = document.getElementById('audit-filter-risk');
+      const sortSelect = document.getElementById('audit-filter-sort');
+
+      if (searchInput) searchInput.value = '';
+      if (statusSelect) statusSelect.value = 'all';
+      if (riskSelect) riskSelect.value = 'all';
+      if (sortSelect) sortSelect.value = 'newest';
+
+      applyAuditFilters();
+    }
+
+    function openAuditDetail(id) {
+      const record = cachedAuditRecords.find(r => r.id === id);
+      if (!record) return;
+
+      activeInspectRecord = record;
+
+      const idEl = document.getElementById('detail-id');
+      const timeEl = document.getElementById('detail-time');
+      const verdictEl = document.getElementById('detail-verdict');
+      const riskEl = document.getElementById('detail-risk');
+      const latencyEl = document.getElementById('detail-latency');
+      const actionEl = document.getElementById('detail-action');
+      const flagsEl = document.getElementById('detail-flags');
+      const jsonEl = document.getElementById('detail-json');
+
+      if (idEl) idEl.innerText = record.id;
+      if (timeEl) timeEl.innerText = `${new Date(record.timestamp).toLocaleString()} (${record.timestamp})`;
+
+      if (verdictEl) {
+        verdictEl.innerHTML = `
+          <span class="px-2.5 py-1 rounded-lg text-xs font-bold ${record.passed ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}">
+            ${record.passed ? 'PASSED (Clean Validation)' : 'BLOCKED (Guardrail Interception)'}
+          </span>
+        `;
+      }
+
+      if (riskEl) {
+        const riskPct = (record.risk_score * 100).toFixed(1);
+        const colorClass = record.risk_score >= 0.70 ? 'text-rose-500' : record.risk_score >= 0.30 ? 'text-amber-500' : 'text-emerald-500';
+        riskEl.innerHTML = `<span class="${colorClass}">${record.risk_score.toFixed(3)} (${riskPct}%)</span>`;
+      }
+
+      if (latencyEl) latencyEl.innerText = `${record.latency_ms} ms`;
+      if (actionEl) actionEl.innerText = record.action;
+
+      if (flagsEl) {
+        const modalFlags = record.flags || record.rule_flags || [];
+        if (modalFlags.length > 0) {
+          flagsEl.innerHTML = modalFlags.map(f => `
+            <span class="px-2 py-0.5 rounded-lg text-xs font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">${f}</span>
+          `).join('');
+        } else {
+          flagsEl.innerHTML = '<span class="text-slate-400 text-xs">No active rule flags triggered</span>';
+        }
+      }
+
+      if (jsonEl) {
+        jsonEl.innerText = JSON.stringify(record, null, 2);
+      }
+
+      const modal = document.getElementById('audit-detail-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+      lucide.createIcons();
+    }
+
+    function closeAuditDetail() {
+      const modal = document.getElementById('audit-detail-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function copyDetailJson() {
+      if (!activeInspectRecord) return;
+      navigator.clipboard.writeText(JSON.stringify(activeInspectRecord, null, 2))
+        .then(() => alert('Forensic JSON record copied to clipboard.'))
+        .catch(() => {});
+    }
+
+    function copyDetailField(field) {
+      if (!activeInspectRecord || !activeInspectRecord[field]) return;
+      navigator.clipboard.writeText(activeInspectRecord[field])
+        .then(() => alert(`Field '${field}' copied to clipboard.`))
+        .catch(() => {});
     }
 
     // Incident Triage Actions
@@ -1448,6 +1786,55 @@
       }
     }
 
+    // Dynamic Port-to-Port Bezier Routing for Architecture Flow Canvas
+    function updateFlowWires() {
+      const container = document.getElementById('flow-canvas-container');
+      if (!container || container.offsetParent === null) return;
+
+      const svg = document.getElementById('flow-wires');
+      if (svg) {
+        const w = Math.max(container.scrollWidth, 1250);
+        const h = Math.max(container.scrollHeight, 540);
+        svg.style.width = w + 'px';
+        svg.style.height = h + 'px';
+        svg.setAttribute('width', w);
+        svg.setAttribute('height', h);
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const scrollLeft = container.scrollLeft;
+      const scrollTop = container.scrollTop;
+
+      const getPort = (nodeId, side) => {
+        const el = document.getElementById(nodeId);
+        if (!el) return { x: 0, y: 0 };
+        const r = el.getBoundingClientRect();
+        const x = (side === 'right' ? r.right : r.left) - containerRect.left + scrollLeft;
+        const y = (r.top + r.height / 2) - containerRect.top + scrollTop;
+        return { x, y };
+      };
+
+      const calcBezier = (p1, p2) => {
+        if (!p1 || !p2 || (p1.x === 0 && p1.y === 0) || (p2.x === 0 && p2.y === 0)) return '';
+        const dx = Math.max(40, Math.abs(p2.x - p1.x) * 0.52);
+        return `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} C ${(p1.x + dx).toFixed(1)} ${p1.y.toFixed(1)}, ${(p2.x - dx).toFixed(1)} ${p2.y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+      };
+
+      const w1 = document.getElementById('wire-1');
+      const w2 = document.getElementById('wire-2');
+      const w2b = document.getElementById('wire-2b');
+      const w3 = document.getElementById('wire-3');
+      const w4 = document.getElementById('wire-4');
+      const w5 = document.getElementById('wire-5');
+
+      if (w1) w1.setAttribute('d', calcBezier(getPort('node-1', 'right'), getPort('node-2', 'left')));
+      if (w2) w2.setAttribute('d', calcBezier(getPort('node-2', 'right'), getPort('node-3', 'left')));
+      if (w2b) w2b.setAttribute('d', calcBezier(getPort('node-2', 'right'), getPort('node-quarantine', 'left')));
+      if (w3) w3.setAttribute('d', calcBezier(getPort('node-3', 'right'), getPort('node-4', 'left')));
+      if (w4) w4.setAttribute('d', calcBezier(getPort('node-4', 'right'), getPort('node-5', 'left')));
+      if (w5) w5.setAttribute('d', calcBezier(getPort('node-5', 'right'), getPort('node-6', 'left')));
+    }
+
     // n8n Node Flow Simulation Visuals
     function simulateNodeFlow(type) {
       const n1 = document.getElementById('node-1');
@@ -1458,39 +1845,64 @@
       const n5 = document.getElementById('node-5');
       const n6 = document.getElementById('node-6');
 
-      // Reset styles
-      [n1, n2, n3, nQuarantine, n4, n5, n6].forEach(n => {
-        n.className = 'w-44 p-4 rounded-2xl bg-white/90 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300';
-      });
+      const defaultClasses = {
+        'node-1': 'relative w-44 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-carrot-500 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300',
+        'node-2': 'relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300',
+        'node-3': 'relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300',
+        'node-quarantine': 'relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-800 opacity-50 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300',
+        'node-4': 'relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300',
+        'node-5': 'relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300',
+        'node-6': 'relative w-48 p-4 rounded-2xl bg-white/95 dark:bg-[#111625]/95 border-2 border-slate-700 shadow-xl backdrop-blur-md flex-shrink-0 transition-all duration-300'
+      };
+
+      const resetAll = () => {
+        for (const [id, cls] of Object.entries(defaultClasses)) {
+          const el = document.getElementById(id);
+          if (el) el.className = cls;
+        }
+        updateFlowWires();
+      };
+
+      resetAll();
 
       if (type === 'legit') {
-        n1.className = 'w-44 p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+        n1.className = 'relative w-44 p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
         setTimeout(() => {
-          n2.className = 'w-44 p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n2.className = 'relative w-48 p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 300);
         setTimeout(() => {
-          n3.className = 'w-44 p-4 rounded-2xl bg-sky-500/20 border-2 border-sky-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n3.className = 'relative w-48 p-4 rounded-2xl bg-sky-500/20 border-2 border-sky-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 600);
         setTimeout(() => {
-          n4.className = 'w-44 p-4 rounded-2xl bg-amber-500/20 border-2 border-amber-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n4.className = 'relative w-48 p-4 rounded-2xl bg-amber-500/20 border-2 border-amber-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 900);
         setTimeout(() => {
-          n5.className = 'w-44 p-4 rounded-2xl bg-purple-500/20 border-2 border-purple-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n5.className = 'relative w-48 p-4 rounded-2xl bg-purple-500/20 border-2 border-purple-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 1200);
         setTimeout(() => {
-          n6.className = 'w-44 p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n6.className = 'relative w-48 p-4 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 1500);
+        setTimeout(resetAll, 3200);
       } else {
-        n1.className = 'w-44 p-4 rounded-2xl bg-carrot-500/20 border-2 border-carrot-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+        n1.className = 'relative w-44 p-4 rounded-2xl bg-carrot-500/20 border-2 border-carrot-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
         setTimeout(() => {
-          n2.className = 'w-44 p-4 rounded-2xl bg-rose-500/30 border-2 border-rose-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n2.className = 'relative w-48 p-4 rounded-2xl bg-rose-500/30 border-2 border-rose-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 300);
         setTimeout(() => {
-          nQuarantine.className = 'w-44 p-4 rounded-2xl bg-rose-600/40 border-2 border-rose-600 shadow-2xl flex-shrink-0 transition-all duration-300 scale-110';
+          nQuarantine.className = 'relative w-48 p-4 rounded-2xl bg-rose-600/40 border-2 border-rose-600 opacity-100 shadow-2xl flex-shrink-0 transition-all duration-300 scale-110';
+          updateFlowWires();
         }, 600);
         setTimeout(() => {
-          n6.className = 'w-44 p-4 rounded-2xl bg-purple-500/20 border-2 border-purple-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          n6.className = 'relative w-48 p-4 rounded-2xl bg-purple-500/20 border-2 border-purple-500 shadow-xl flex-shrink-0 transition-all duration-300 scale-105';
+          updateFlowWires();
         }, 900);
+        setTimeout(resetAll, 3200);
       }
     }
   </script>

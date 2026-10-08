@@ -54,6 +54,40 @@ async fn build_sentry_engine() -> Result<(Arc<SentryEngine>, Arc<InMemoryVectorS
     sentry.ingest_knowledge(doc2).await?;
     sentry.ingest_knowledge(doc3).await?;
 
+    // Seed baseline realistic forensic audit records
+    auditor.record(
+        "Ingress Scan: Verified routine Kubernetes pod worker telemetry",
+        &GuardrailVerdict {
+            passed: true,
+            risk_score: 0.05,
+            flags: vec!["TELEMETRY_HEALTHY".to_string(), "NO_INJECTION".to_string()],
+            message: "Routine node audit verified against cluster baseline.".to_string(),
+        },
+        7,
+    ).await;
+
+    auditor.record(
+        "Perimeter Defense: Blocked SQL injection probe on /api/auth/login",
+        &GuardrailVerdict {
+            passed: false,
+            risk_score: 0.88,
+            flags: vec!["SQLI_PATTERN_DETECTED".to_string(), "AUTH_BYPASS_ATTEMPT".to_string()],
+            message: "Unsanitized user inputs in authentication gateway route quarantined.".to_string(),
+        },
+        4,
+    ).await;
+
+    auditor.record(
+        "Security Intercept: Adversarial prompt injection detected in telemetry",
+        &GuardrailVerdict {
+            passed: false,
+            risk_score: 0.96,
+            flags: vec!["PROMPT_INJECTION_OVERRIDE".to_string(), "POLICY_VIOLATION".to_string()],
+            message: "Detected override instruction attempting secret master key dump.".to_string(),
+        },
+        12,
+    ).await;
+
     Ok((sentry, vector_store, auditor))
 }
 
