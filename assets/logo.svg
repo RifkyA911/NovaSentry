@@ -1,192 +1,252 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <!-- Soft Diffuse Ground Shadow Filter -->
-    <filter id="softbody-ground-shadow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="16" result="blur" />
+    <!-- Soft Ambient Ground Shadows -->
+    <filter id="shield-shadow-floor" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18" result="blur" />
+    </filter>
+    <filter id="shield-contact-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
     </filter>
 
-    <!-- 3D Specular Blur -->
-    <filter id="specular-soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="5" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <!-- Volumetric Soft Blur for Highlights -->
+    <filter id="soft-specular-blur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
     </filter>
 
-    <!-- Master Keylight Gradient (Top Left 45 deg) -->
-    <radialGradient id="sb-lobe-main" cx="35%" cy="28%" r="72%">
-      <stop offset="0%" stop-color="#fff2e0" />
-      <stop offset="18%" stop-color="#ff9d3b" />
-      <stop offset="48%" stop-color="#ff5900" />
-      <stop offset="82%" stop-color="#ba2b00" />
-      <stop offset="100%" stop-color="#4a0f00" />
+    <!-- Outer Rim Master Bevel Gradient (Top-Left Key Light to Bottom-Right Shadow) -->
+    <linearGradient id="rim-bevel-grad" x1="18%" y1="12%" x2="82%" y2="88%">
+      <stop offset="0%" stop-color="#fff5eb" />
+      <stop offset="12%" stop-color="#ffb870" />
+      <stop offset="38%" stop-color="#ff6b08" />
+      <stop offset="70%" stop-color="#c43300" />
+      <stop offset="92%" stop-color="#691200" />
+      <stop offset="100%" stop-color="#3b0800" />
+    </linearGradient>
+
+    <!-- 3D Extrusion Depth (Bottom Edge Thickness) -->
+    <linearGradient id="rim-extrude-grad" x1="30%" y1="40%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#801b00" />
+      <stop offset="60%" stop-color="#420b00" />
+      <stop offset="100%" stop-color="#1c0300" />
+    </linearGradient>
+
+    <!-- Inner Cavity Ambient Occlusion Inset -->
+    <linearGradient id="cavity-shadow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#240500" stop-opacity="0.8" />
+      <stop offset="40%" stop-color="#4a0f00" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.6" />
+    </linearGradient>
+
+    <!-- Inner Shield Face Volumetric Dome (Smooth Spherical Keylight) -->
+    <radialGradient id="shield-face-grad" cx="40%" cy="32%" r="68%">
+      <stop offset="0%" stop-color="#fff8f0" />
+      <stop offset="15%" stop-color="#ffa64d" />
+      <stop offset="42%" stop-color="#ff5c00" />
+      <stop offset="78%" stop-color="#b52600" />
+      <stop offset="100%" stop-color="#540e00" />
     </radialGradient>
 
-    <!-- Secondary Soft Body Lobe (Right Twist) -->
-    <radialGradient id="sb-lobe-right" cx="42%" cy="26%" r="70%">
-      <stop offset="0%" stop-color="#ffe3c2" />
-      <stop offset="22%" stop-color="#ff8924" />
-      <stop offset="55%" stop-color="#e84e00" />
-      <stop offset="88%" stop-color="#991f00" />
-      <stop offset="100%" stop-color="#3d0a00" />
-    </radialGradient>
-
-    <!-- Bottom Intertwined Fold (Ambient Occlusion & Warm Bounce) -->
-    <radialGradient id="sb-lobe-bottom" cx="45%" cy="35%" r="65%">
-      <stop offset="0%" stop-color="#ffad5a" />
-      <stop offset="35%" stop-color="#ff6000" />
-      <stop offset="75%" stop-color="#b82600" />
-      <stop offset="100%" stop-color="#400b00" />
-    </radialGradient>
-
-    <!-- Deep Crease Cavity (Self-Shadowing) -->
-    <linearGradient id="sb-crease-shadow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1f0500" stop-opacity="0.85" />
-      <stop offset="50%" stop-color="#470e00" stop-opacity="0.6" />
+    <!-- Facet Division Left (Bright Bounce) -->
+    <linearGradient id="facet-left-grad" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4" />
+      <stop offset="60%" stop-color="#ff9933" stop-opacity="0.1" />
       <stop offset="100%" stop-color="#ff5500" stop-opacity="0" />
     </linearGradient>
 
-    <!-- Glossy Specular Glaze (Curved High-Gloss Sheen) -->
-    <linearGradient id="sb-specular-arc" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
-      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.3" />
+    <!-- Facet Division Right (Self Shadow) -->
+    <linearGradient id="facet-right-grad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.0" />
+      <stop offset="50%" stop-color="#3b0800" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#240500" stop-opacity="0.65" />
+    </linearGradient>
+
+    <!-- Glossy Specular Sheen (Curved Upper Shoulder) -->
+    <linearGradient id="gloss-sheen-grad" x1="20%" y1="10%" x2="60%" y2="80%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.35" />
+      <stop offset="70%" stop-color="#ffb366" stop-opacity="0.08" />
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
 
-    <!-- Subsurface Radiance Accent (Neon Core Inset) -->
-    <radialGradient id="sb-cyber-iris" cx="40%" cy="35%" r="60%">
+    <!-- Central Cyber Emblem Glow (Nova Core) -->
+    <radialGradient id="nova-core-glow" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="30%" stop-color="#ffaa44" />
-      <stop offset="70%" stop-color="#ea580c" />
-      <stop offset="100%" stop-color="#1a0400" />
+      <stop offset="30%" stop-color="#fff2d6" />
+      <stop offset="55%" stop-color="#ffa333" />
+      <stop offset="85%" stop-color="#e64500" />
+      <stop offset="100%" stop-color="#7a1400" />
     </radialGradient>
+
+    <!-- Inner Core Cyber Ring -->
+    <linearGradient id="core-rim-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="50%" stop-color="#ff7b00" />
+      <stop offset="100%" stop-color="#360800" />
+    </linearGradient>
   </defs>
 
   <!-- ============================================== -->
-  <!-- 1. SOFT GROUND CONTACT & AMBIENT SHADOWS       -->
+  <!-- 1. AMBIENT GROUND DROP SHADOWS                 -->
   <!-- ============================================== -->
-  <g>
-    <!-- Wide Diffuse Ambient Floor Shadow -->
-    <ellipse cx="256" cy="442" rx="150" ry="26" fill="#2b0a02" opacity="0.35" filter="url(#softbody-ground-shadow)" />
-    <!-- Crisp Tight Contact Shadow -->
-    <ellipse cx="256" cy="436" rx="95" ry="14" fill="#140300" opacity="0.55" filter="url(#softbody-ground-shadow)" />
+  <g id="ground-shadows">
+    <!-- Wide warm orange ground bounce -->
+    <ellipse cx="256" cy="454" rx="145" ry="26" fill="#ff5500" opacity="0.25" filter="url(#shield-shadow-floor)" />
+    <!-- Deep floor contact occlusion shadow -->
+    <ellipse cx="256" cy="450" rx="98" ry="15" fill="#1f0400" opacity="0.65" filter="url(#shield-contact-shadow)" />
   </g>
 
   <!-- ============================================== -->
-  <!-- 2. REAR INTERTWINED SOFT-BODY FOLD             -->
+  <!-- 2. SHIELD 3D EXTRUDED BASE (PHYSICAL DEPTH)    -->
   <!-- ============================================== -->
-  <!-- Back curving lobe that loops behind the main knot -->
-  <path d="M 172 178
-           C 134 118 200 62 284 76
-           C 362 88 412 168 376 254
-           C 346 326 264 362 208 328
-           C 168 304 184 246 226 232
-           C 278 214 316 168 288 126
-           C 264 92 204 104 172 178 Z"
-        fill="url(#sb-lobe-bottom)" />
-
-  <!-- Shadow cast by front folds onto the rear loop -->
-  <path d="M 234 132
-           C 280 152 320 200 304 266
-           C 288 328 226 344 196 326
-           C 234 318 274 278 284 234
-           C 294 186 266 148 234 132 Z"
-        fill="url(#sb-crease-shadow)" />
+  <g id="shield-extrusion">
+    <!-- Lower extrusion shelf providing physical 3D thickness -->
+    <path d="M 104 148
+             C 100 250, 150 365, 256 448
+             C 362 365, 412 250, 408 148
+             C 410 270, 360 388, 256 462
+             C 152 388, 102 270, 104 148 Z"
+          fill="url(#rim-extrude-grad)" />
+  </g>
 
   <!-- ============================================== -->
-  <!-- 3. LOWER SOFT INFLATED BULB                    -->
+  <!-- 3. MAIN SHIELD 3D BEVEL RIM (OUTER SHELL)      -->
   <!-- ============================================== -->
-  <path d="M 148 248
-           C 112 288 116 358 172 404
-           C 230 452 334 446 384 388
-           C 432 332 408 262 344 246
-           C 284 232 232 278 198 274
-           C 174 270 160 258 148 248 Z"
-        fill="url(#sb-lobe-bottom)" />
+  <g id="shield-rim">
+    <!-- Outer Curved Shield Crest Silhouette -->
+    <path d="M 256 76
+             C 320 86, 375 106, 408 136
+             C 412 245, 366 352, 256 438
+             C 146 352, 100 245, 104 136
+             C 137 106, 192 86, 256 76 Z"
+          fill="url(#rim-bevel-grad)" />
 
-  <!-- Lower Bulb Specular Sheen -->
-  <path d="M 186 386
-           C 246 430 330 422 368 372
-           C 352 396 288 412 226 394
-           C 198 386 188 378 186 386 Z"
-          fill="#ffbe7b"
+    <!-- Rim Highlight Accent on Top-Left Edge -->
+    <path d="M 256 77
+             C 200 86, 148 105, 114 134
+             C 107 195, 122 276, 172 344
+             C 162 274, 154 200, 160 148
+             C 185 125, 222 108, 256 98 Z"
+          fill="#ffffff"
+          opacity="0.32"
+          filter="url(#soft-specular-blur)" />
+
+    <!-- Dark Underside Ambient Occlusion Rim Shadow -->
+    <path d="M 408 136
+             C 412 245, 366 352, 256 438
+             C 275 422, 386 338, 388 200
+             C 388 170, 396 150, 408 136 Z"
+          fill="#1f0400"
           opacity="0.45" />
-
-  <!-- ============================================== -->
-  <!-- 4. MAIN CENTRAL INFLATED SOFT-BODY SPHERE LOBE -->
-  <!-- ============================================== -->
-  <path d="M 216 104
-           C 310 72 418 132 416 238
-           C 414 334 322 404 224 388
-           C 134 374 88 278 112 188
-           C 130 122 172 118 216 104 Z"
-        fill="url(#sb-lobe-main)" />
-
-  <!-- Crease Shadow Under the Main Sphere Crevice -->
-  <path d="M 172 208
-           C 214 244 276 258 334 228
-           C 292 274 224 286 168 254
-           C 142 240 154 218 172 208 Z"
-        fill="url(#sb-crease-shadow)" />
-
-  <!-- ============================================== -->
-  <!-- 5. TOP ORGANIC BULGE / TWISTING CUSHION CREST  -->
-  <!-- ============================================== -->
-  <path d="M 184 108
-           C 236 82 322 96 356 156
-           C 386 210 354 272 296 286
-           C 238 300 184 256 166 204
-           C 152 162 158 122 184 108 Z"
-        fill="url(#sb-lobe-right)" />
-
-  <!-- Deep Occlusion Valley Between the Folds -->
-  <path d="M 204 168
-           C 236 196 278 206 314 186
-           C 284 222 236 226 194 204
-           C 178 196 186 180 204 168 Z"
-        fill="#260600"
-        opacity="0.75" />
-
-  <!-- ============================================== -->
-  <!-- 6. NOVASENTRY INTEGRATED CYBER IRIS CORE       -->
-  <!-- ============================================== -->
-  <!-- Peeking from the center of the soft-body folds -->
-  <g transform="translate(242, 212)">
-    <circle cx="18" cy="18" r="32" fill="#140400" />
-    <circle cx="18" cy="18" r="26" fill="url(#sb-cyber-iris)" />
-    <circle cx="18" cy="18" r="14" fill="#0d0200" stroke="#ff8c2b" stroke-width="2.5" />
-    <circle cx="18" cy="18" r="6" fill="#ffffff" filter="url(#specular-soft)" />
   </g>
 
   <!-- ============================================== -->
-  <!-- 7. ULTRA-GLOSSY SOFT-BODY SPECULAR HIGHLIGHTS  -->
+  <!-- 4. INNER SHIELD RECESS & DOMED FACE            -->
   <!-- ============================================== -->
-  <!-- Primary High-Gloss Crescent (Top Left Keylight Reflection) -->
-  <path d="M 174 136
-           C 208 108 268 108 308 126
-           C 328 136 344 154 350 174
-           C 342 152 318 134 290 124
-           C 252 110 200 114 168 138
-           C 162 142 168 138 174 136 Z"
-        fill="url(#sb-specular-arc)"
-        filter="url(#specular-soft)" />
+  <g id="shield-face">
+    <!-- Inner Cavity Bevel Drop Shadow -->
+    <path d="M 256 94
+             C 310 102, 356 120, 384 145
+             C 388 238, 348 330, 256 408
+             C 164 330, 124 238, 128 145
+             C 156 120, 202 102, 256 94 Z"
+          fill="url(#cavity-shadow)" />
 
-  <!-- Glossy Specular Hotspot Dot -->
-  <ellipse cx="218" cy="134" rx="22" ry="12" fill="#ffffff" opacity="0.92" transform="rotate(-25 218 134)" filter="url(#specular-soft)" />
-  <ellipse cx="236" cy="126" rx="8" ry="4.5" fill="#ffffff" opacity="0.98" transform="rotate(-25 236 126)" />
+    <!-- Main Volumetric Domed Shield Face -->
+    <path d="M 256 98
+             C 307 106, 351 123, 378 147
+             C 381 234, 344 322, 256 398
+             C 168 322, 131 234, 134 147
+             C 161 123, 205 106, 256 98 Z"
+          fill="url(#shield-face-grad)" />
 
-  <!-- Secondary Soft Cushion Highlight (Top-Right Bulb) -->
-  <path d="M 324 168
-           C 348 188 360 218 356 248
-           C 358 226 348 202 332 184
-           C 320 170 310 162 324 168 Z"
-        fill="#ffffff"
-        opacity="0.6"
-        filter="url(#specular-soft)" />
+    <!-- 3D Center Ridge (Vertebra) Left Lit Half -->
+    <path d="M 256 98
+             L 256 398
+             C 168 322, 131 234, 134 147
+             C 161 123, 205 106, 256 98 Z"
+          fill="url(#facet-left-grad)" />
 
-  <!-- Underside Warm Ambient Bounce Glow (Juicy Tangerine Radiance) -->
-  <path d="M 176 348
-           C 214 382 284 384 326 352
-           C 300 372 248 376 206 358
-           C 188 350 178 344 176 348 Z"
-        fill="#ffd1a3"
-        opacity="0.75" />
+    <!-- 3D Center Ridge Right Shaded Half -->
+    <path d="M 256 98
+             L 256 398
+             C 344 322, 381 234, 378 147
+             C 351 123, 307 106, 256 98 Z"
+          fill="url(#facet-right-grad)" />
+  </g>
+
+  <!-- ============================================== -->
+  <!-- 5. SPECULAR GLOSS ARC (ORGANIC GLASSY SHEEN)   -->
+  <!-- ============================================== -->
+  <g id="specular-gloss">
+    <!-- Sweeping High-Gloss Reflection across Upper Left Shield Body -->
+    <path d="M 160 135
+             C 210 112, 280 115, 335 132
+             C 300 178, 240 220, 175 240
+             C 148 205, 148 165, 160 135 Z"
+          fill="url(#gloss-sheen-grad)" />
+
+    <!-- Crisp Rim Crest Glint (Point Specular) -->
+    <ellipse cx="230" cy="118" rx="28" ry="10" transform="rotate(-14 230 118)" fill="#ffffff" opacity="0.65" filter="url(#soft-specular-blur)" />
+    <circle cx="218" cy="116" r="4.5" fill="#ffffff" opacity="0.95" />
+  </g>
+
+  <!-- ============================================== -->
+  <!-- 6. EMBOSSED CENTRAL SENTRY EMBLEM (NOVA CREST) -->
+  <!-- ============================================== -->
+  <g id="sentry-emblem">
+    <!-- Emblem Ambient Drop Shadow on Face -->
+    <circle cx="256" cy="242" r="54" fill="#240500" opacity="0.45" filter="url(#soft-specular-blur)" />
+
+    <!-- Outer 3D Metallic Core Ring Bezel -->
+    <circle cx="256" cy="238" r="48" fill="url(#core-rim-grad)" />
+    <circle cx="256" cy="238" r="44" fill="#3b0800" />
+
+    <!-- Glowing Volumetric Nova Core Sphere -->
+    <circle cx="256" cy="238" r="40" fill="url(#nova-core-glow)" />
+
+    <!-- Cyber Shield Security Crest (Stylized Check & Sentry Spark) -->
+    <!-- Stylized 3D Security Checkmark Emblem -->
+    <path d="M 234 238
+             L 249 253
+             C 251 255, 254 255, 256 253
+             L 282 223
+             C 285 220, 283 216, 279 216
+             L 271 216
+             C 269 216, 267 217, 266 219
+             L 252 238
+             L 244 230
+             C 243 229, 241 228, 239 228
+             L 233 228
+             C 229 228, 228 233, 231 235 Z"
+          fill="#ffffff"
+          filter="url(#soft-specular-blur)" />
+    <path d="M 234 237
+             L 249 252
+             C 251 254, 254 254, 256 252
+             L 282 222
+             C 285 219, 283 215, 279 215
+             L 271 215
+             C 269 215, 267 216, 266 218
+             L 252 237
+             L 244 229
+             C 243 228, 241 227, 239 227
+             L 233 227
+             C 229 227, 228 232, 231 234 Z"
+          fill="#ffffff" />
+
+    <!-- Specular Pinpoint Glint on Sentry Emblem -->
+    <circle cx="244" cy="225" r="3" fill="#ffffff" opacity="0.9" />
+  </g>
+
+  <!-- ============================================== -->
+  <!-- 7. SUBTLE BOTTOM BOUNCE LIGHT (WARM RIM)       -->
+  <!-- ============================================== -->
+  <path d="M 180 348
+           C 216 384, 256 405, 256 405
+           C 256 405, 296 384, 332 348
+           C 292 378, 256 394, 256 394
+           C 256 394, 220 378, 180 348 Z"
+        fill="#ff9933"
+        opacity="0.3"
+        filter="url(#soft-specular-blur)" />
 </svg>

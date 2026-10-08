@@ -79,36 +79,49 @@
   <rect x="1.5" y="1.5" width="997" height="317" rx="18.5" fill="none" stroke="#f97316" stroke-width="1.2" stroke-opacity="0.25" />
 
   <!-- =============================== -->
-  <!-- LEFT: SOFT-BODY 3D BALL ARTWORK -->
+  <!-- LEFT: 3D VOLUMETRIC ORANGE SHIELD -->
   <!-- =============================== -->
-  <g transform="translate(68, 30) scale(0.46)">
-    <!-- Floor Shadow -->
-    <ellipse cx="256" cy="442" rx="150" ry="26" fill="#140300" opacity="0.6" filter="url(#softGlow)" />
+  <g transform="translate(62, 16) scale(0.53)">
+    <!-- Floor Glow & Contact Shadows -->
+    <ellipse cx="256" cy="454" rx="145" ry="26" fill="#ff5500" opacity="0.25" filter="url(#softGlow)" />
+    <ellipse cx="256" cy="450" rx="98" ry="15" fill="#1f0400" opacity="0.65" filter="url(#b3d-shadow)" />
 
-    <!-- Rear Loop -->
-    <path d="M 172 178 C 134 118 200 62 284 76 C 362 88 412 168 376 254 C 346 326 264 362 208 328 C 168 304 184 246 226 232 C 278 214 316 168 288 126 C 264 92 204 104 172 178 Z"
-          fill="url(#b3d-face)" />
+    <!-- 3D Extrusion Depth Shelf -->
+    <path d="M 104 148 C 100 250, 150 365, 256 448 C 362 365, 412 250, 408 148 C 410 270, 360 388, 256 462 C 152 388, 102 270, 104 148 Z"
+          fill="#420b00" />
 
-    <!-- Lower Bulb -->
-    <path d="M 148 248 C 112 288 116 358 172 404 C 230 452 334 446 384 388 C 432 332 408 262 344 246 C 284 232 232 278 198 274 C 174 270 160 258 148 248 Z"
+    <!-- Outer 3D Rim Bevel -->
+    <path d="M 256 76 C 320 86, 375 106, 408 136 C 412 245, 366 352, 256 438 C 146 352, 100 245, 104 136 C 137 106, 192 86, 256 76 Z"
           fill="url(#b3d-rim)" />
 
-    <!-- Main Central Soft-Body Sphere -->
-    <path d="M 216 104 C 310 72 418 132 416 238 C 414 334 322 404 224 388 C 134 374 88 278 112 188 C 130 122 172 118 216 104 Z"
-          fill="url(#b3d-sphere)" filter="url(#softGlow)" />
+    <!-- Rim Specular Accent -->
+    <path d="M 256 77 C 200 86, 148 105, 114 134 C 107 195, 122 276, 172 344 C 162 274, 154 200, 160 148 C 185 125, 222 108, 256 98 Z"
+          fill="#ffffff" opacity="0.35" filter="url(#softGlow)" />
 
-    <!-- Top Cushion Crest -->
-    <path d="M 184 108 C 236 82 322 96 356 156 C 386 210 354 272 296 286 C 238 300 184 256 166 204 C 152 162 158 122 184 108 Z"
+    <!-- Inner Shield Face (Domed Keylight) -->
+    <path d="M 256 98 C 307 106, 351 123, 378 147 C 381 234, 344 322, 256 398 C 168 322, 131 234, 134 147 C 161 123, 205 106, 256 98 Z"
           fill="url(#b3d-face)" />
 
-    <!-- Center Iris Eye -->
-    <circle cx="260" cy="230" r="28" fill="#140400" />
-    <circle cx="260" cy="230" r="14" fill="#ff7a1a" filter="url(#softGlow)" />
-    <circle cx="260" cy="230" r="6" fill="#ffffff" />
+    <!-- Left Facet Highlight -->
+    <path d="M 256 98 L 256 398 C 168 322, 131 234, 134 147 C 161 123, 205 106, 256 98 Z"
+          fill="#ffffff" opacity="0.18" />
 
-    <!-- Glossy Specular Arc -->
-    <ellipse cx="218" cy="134" rx="28" ry="14" fill="#ffffff" opacity="0.9" transform="rotate(-25 218 134)" />
-    <circle cx="236" cy="126" r="6" fill="#ffffff" opacity="0.95" />
+    <!-- Right Facet Self Shadow -->
+    <path d="M 256 98 L 256 398 C 344 322, 381 234, 378 147 C 351 123, 307 106, 256 98 Z"
+          fill="#000000" opacity="0.25" />
+
+    <!-- Sweeping Specular Arc -->
+    <path d="M 160 135 C 210 112, 280 115, 335 132 C 300 178, 240 220, 175 240 C 148 205, 148 165, 160 135 Z"
+          fill="#ffffff" opacity="0.38" />
+
+    <!-- Nova Sentry Core Emblem -->
+    <circle cx="256" cy="242" r="50" fill="#240500" opacity="0.45" />
+    <circle cx="256" cy="238" r="44" fill="url(#b3d-rim)" />
+    <circle cx="256" cy="238" r="38" fill="url(#b3d-sphere)" />
+    <!-- Checkmark Crest -->
+    <path d="M 235 238 L 249 252 C 251 254, 254 254, 256 252 L 282 222 C 285 219, 283 215, 279 215 L 271 215 C 269 215, 267 216, 266 218 L 252 237 L 244 229 C 243 228, 241 227, 239 227 L 233 227 C 229 227, 228 232, 231 234 Z"
+          fill="#ffffff" />
+    <circle cx="244" cy="225" r="3" fill="#ffffff" opacity="0.9" />
   </g>
 
   <!-- =============================== -->
