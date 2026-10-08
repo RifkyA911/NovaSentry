@@ -12,6 +12,8 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 # Async Runtime
 tokio = { version = "1.38", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures-util = "0.3"
 async-trait = "0.1.80"
 
 # Serialization & Data

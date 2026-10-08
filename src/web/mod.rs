@@ -4,14 +4,24 @@ use std::time::Instant;
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{Html, IntoResponse, Json},
+    response::{
+        sse::{Event, KeepAlive, Sse},
+        Html, IntoResponse, Json,
+    },
     routing::{get, post},
     Router,
 };
+use chrono::Utc;
+use futures_util::stream::Stream;
 use serde::{Deserialize, Serialize};
+use tokio_stream::wrappers::BroadcastStream;
+use tokio_stream::StreamExt as _;
 use tower_http::cors::CorsLayer;
 
 use crate::components::sentry::SentryEngine;
+use crate::components::sonar::{
+    FlowType, RadarCoordinate, SonarEngine, SonarPacket, ThreatVerdict,
+};
 use crate::core::models::{AlertSeverity, Document, SentryAlert};
 
 pub mod auth;
@@ -24,6 +34,7 @@ pub struct WebAppState {
     pub sentry: Arc<SentryEngine>,
     pub auth: auth::AuthDb,
     pub chaos: Arc<crate::components::chaos::ChaosEngine>,
+    pub sonar: Arc<SonarEngine>,
 }
 
 #[derive(Serialize)]
@@ -112,6 +123,18 @@ pub struct ChaosRunRequest {
     pub experiment_id: String,
 }
 
+#[derive(Deserialize)]
+pub struct NineRouterConnectRequest {
+    pub endpoint: Option<String>,
+    pub api_key: Option<String>,
+    pub routing_profile: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct SonarSimulateRequest {
+    pub sample_type: Option<String>,
+}
+
 pub fn create_router(state: WebAppState) -> Router {
     Router::new()
         .route("/", get(serve_index))
@@ -121,6 +144,13 @@ pub fn create_router(state: WebAppState) -> Router {
         .route("/api/investigate", post(investigate_alert))
         .route("/api/audit", get(get_audit_trail))
         .route("/api/guardrail/test", post(test_guardrail))
+        // Real-Time Sonar Detector & 9router Gateway SSE Streams
+        .route("/api/sonar/stream", get(stream_sonar_events))
+        .route("/api/sonar/packets", get(get_sonar_recent))
+        .route("/api/sonar/9router/status", get(get_9router_status_handler))
+        .route("/api/sonar/9router/connect", post(connect_9router_handler))
+        .route("/api/sonar/9router/disconnect", post(disconnect_9router_handler))
+        .route("/api/sonar/simulate", post(simulate_sonar_packet_handler))
         // Agentic Chaos Engineering Endpoints
         .route("/api/chaos/experiments", get(get_chaos_experiments))
         .route("/api/chaos/run", post(run_chaos))
@@ -261,11 +291,68 @@ async fn investigate_alert(
         payload.raw_telemetry,
     );
 
+    // Emit Inbound Sonar Pulse
+    let in_pulse = SonarPacket {
+        id: format!("pkt-in-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+        timestamp: Utc::now(),
+        flow_type: FlowType::InboundRequest,
+        upstream_gateway: "9router Edge Router".to_string(),
+        provider: "Anthropic / OpenAI Mesh".to_string(),
+        model: state.sentry.generator.model_name().to_string(),
+        client_origin: format!("SOC [{}]", alert.source),
+        latency_ms: 15,
+        prompt_tokens: alert.raw_telemetry.len() / 4 + 80,
+        completion_tokens: 0,
+        estimated_cost_usd: 0.0006,
+        threat_verdict: ThreatVerdict::Clean,
+        radar_coordinate: RadarCoordinate {
+            angle_deg: 120.0,
+            distance_norm: 0.28,
+            frequency_khz: 14.5,
+            intensity_db: -9.0,
+        },
+        payload_preview: format!("INBOUND_TRIAGE: {}", alert.title),
+    };
+    state.sonar.emit_packet(in_pulse).await;
+
     let start = Instant::now();
     match state.sentry.investigate_alert(&alert).await {
         Ok(report) => {
             let latency_ms = start.elapsed().as_millis();
             let guardrail_interception = report.title.contains("[SECURITY VIOLATION DETECTED]");
+
+            // Emit Outbound / Intercepted Sonar Pulse
+            let out_pulse = SonarPacket {
+                id: format!("pkt-out-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+                timestamp: Utc::now(),
+                flow_type: if guardrail_interception {
+                    FlowType::GuardrailInterception
+                } else {
+                    FlowType::OutboundResponse
+                },
+                upstream_gateway: "9router Edge Router".to_string(),
+                provider: "Anthropic Claude 3.5 Sonnet".to_string(),
+                model: state.sentry.generator.model_name().to_string(),
+                client_origin: format!("SOC [{}]", alert.source),
+                latency_ms: latency_ms as u64,
+                prompt_tokens: alert.raw_telemetry.len() / 4 + 80,
+                completion_tokens: report.root_cause_analysis.len() / 4 + 40,
+                estimated_cost_usd: 0.0022,
+                threat_verdict: if guardrail_interception {
+                    ThreatVerdict::Blocked
+                } else {
+                    ThreatVerdict::Clean
+                },
+                radar_coordinate: RadarCoordinate {
+                    angle_deg: if guardrail_interception { 295.0 } else { 120.0 },
+                    distance_norm: if guardrail_interception { 0.88 } else { 0.22 },
+                    frequency_khz: if guardrail_interception { 22.0 } else { 16.0 },
+                    intensity_db: if guardrail_interception { -1.5 } else { -7.5 },
+                },
+                payload_preview: format!("OUTBOUND_ANALYSIS: {}", report.title),
+            };
+            state.sonar.emit_packet(out_pulse).await;
+
             (
                 StatusCode::OK,
                 Json(InvestigateResponse {
@@ -310,6 +397,46 @@ async fn test_guardrail(
         state.sentry.test_guardrail_input(&payload.payload).await
     };
 
+    let is_blocked = match &result {
+        Ok(v) => !v.passed,
+        Err(_) => true,
+    };
+
+    let gr_pulse = SonarPacket {
+        id: format!("pkt-gr-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+        timestamp: Utc::now(),
+        flow_type: if is_blocked {
+            FlowType::GuardrailInterception
+        } else {
+            FlowType::InboundRequest
+        },
+        upstream_gateway: "9router Sentinel Filter".to_string(),
+        provider: "NovaSentry Guardrail Engine".to_string(),
+        model: "heuristics/injection-shield".to_string(),
+        client_origin: "Interactive Guardrail Tester".to_string(),
+        latency_ms: 12,
+        prompt_tokens: payload.payload.len() / 4 + 10,
+        completion_tokens: 0,
+        estimated_cost_usd: 0.0001,
+        threat_verdict: if is_blocked {
+            ThreatVerdict::Blocked
+        } else {
+            ThreatVerdict::Clean
+        },
+        radar_coordinate: RadarCoordinate {
+            angle_deg: if is_blocked { 320.0 } else { 45.0 },
+            distance_norm: if is_blocked { 0.90 } else { 0.18 },
+            frequency_khz: if is_blocked { 21.5 } else { 15.0 },
+            intensity_db: if is_blocked { -2.0 } else { -12.0 },
+        },
+        payload_preview: format!(
+            "GUARDRAIL_EVAL [{}]: {}",
+            payload.mode,
+            &payload.payload.chars().take(60).collect::<String>()
+        ),
+    };
+    state.sonar.emit_packet(gr_pulse).await;
+
     match result {
         Ok(verdict) => (StatusCode::OK, Json(verdict)).into_response(),
         Err(err) => (
@@ -318,6 +445,59 @@ async fn test_guardrail(
         )
             .into_response(),
     }
+}
+
+// ==========================================
+// REAL-TIME SONAR DETECTOR & 9ROUTER HANDLERS
+// ==========================================
+
+async fn stream_sonar_events(
+    State(state): State<WebAppState>,
+) -> Sse<impl Stream<Item = Result<Event, std::convert::Infallible>>> {
+    let rx = state.sonar.subscribe();
+    let stream = BroadcastStream::new(rx).filter_map(|item| match item {
+        Ok(packet) => {
+            let json = serde_json::to_string(&packet).unwrap_or_default();
+            Some(Ok(Event::default().event("sonar_pulse").data(json)))
+        }
+        Err(_) => None,
+    });
+
+    Sse::new(stream).keep_alive(KeepAlive::default())
+}
+
+async fn get_sonar_recent(State(state): State<WebAppState>) -> impl IntoResponse {
+    let packets = state.sonar.get_recent_packets().await;
+    Json(packets)
+}
+
+async fn get_9router_status_handler(State(state): State<WebAppState>) -> impl IntoResponse {
+    let status = state.sonar.get_9router_status().await;
+    Json(status)
+}
+
+async fn connect_9router_handler(
+    State(state): State<WebAppState>,
+    Json(payload): Json<NineRouterConnectRequest>,
+) -> impl IntoResponse {
+    let status = state
+        .sonar
+        .connect_9router(payload.endpoint, payload.api_key, payload.routing_profile)
+        .await;
+    Json(status)
+}
+
+async fn disconnect_9router_handler(State(state): State<WebAppState>) -> impl IntoResponse {
+    let status = state.sonar.disconnect_9router().await;
+    Json(status)
+}
+
+async fn simulate_sonar_packet_handler(
+    State(state): State<WebAppState>,
+    Json(payload): Json<SonarSimulateRequest>,
+) -> impl IntoResponse {
+    let packet = state.sonar.simulate_packet(payload.sample_type.as_deref()).await;
+    Json(packet)
 }
 
 // ==========================================
@@ -338,7 +518,36 @@ async fn run_chaos(
     Json(payload): Json<ChaosRunRequest>,
 ) -> impl IntoResponse {
     match state.chaos.run_experiment(&state.sentry, &payload.experiment_id).await {
-        Ok(result) => (StatusCode::OK, Json(serde_json::to_value(result).unwrap_or_default())).into_response(),
+        Ok(result) => {
+            let chaos_pulse = SonarPacket {
+                id: format!("pkt-chaos-{}", &uuid::Uuid::new_v4().to_string()[..8]),
+                timestamp: Utc::now(),
+                flow_type: FlowType::RouterFallback,
+                upstream_gateway: "9router Chaos Resilience Lab".to_string(),
+                provider: "Resilience Orchestrator".to_string(),
+                model: "chaos/resilience-simulation".to_string(),
+                client_origin: "Chaos Engineering Lab".to_string(),
+                latency_ms: result.latency_ms as u64,
+                prompt_tokens: 850,
+                completion_tokens: 320,
+                estimated_cost_usd: 0.0008,
+                threat_verdict: if result.circuit_breaker_triggered {
+                    ThreatVerdict::Blocked
+                } else {
+                    ThreatVerdict::Anomalous
+                },
+                radar_coordinate: RadarCoordinate {
+                    angle_deg: 210.0,
+                    distance_norm: 0.72,
+                    frequency_khz: 19.0,
+                    intensity_db: -3.5,
+                },
+                payload_preview: format!("CHAOS_DISRUPTION: {}", result.experiment_title),
+            };
+            state.sonar.emit_packet(chaos_pulse).await;
+
+            (StatusCode::OK, Json(serde_json::to_value(result).unwrap_or_default())).into_response()
+        }
         Err(err) => (
             StatusCode::BAD_REQUEST,
             Json(serde_json::json!({ "error": err })),
@@ -462,11 +671,18 @@ pub async fn start_server(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let auth = auth::AuthDb::new(db_path)?;
     let chaos = Arc::new(crate::components::chaos::ChaosEngine::new());
-    let state = WebAppState { sentry, auth, chaos };
+    let sonar = Arc::new(crate::components::sonar::SonarEngine::new());
+    
+    // Seed initial telemetry packet so Sonar detector radar is immediately active
+    sonar.simulate_packet(Some("response")).await;
+    sonar.simulate_packet(Some("injection")).await;
+
+    let state = WebAppState { sentry, auth, chaos, sonar };
     let router = create_router(state);
 
     println!("⚡ NovaSentry Web Server binding to http://{}", addr);
     println!("📦 SQLite Authentication Database: {}", db_path);
+    println!("📡 Sonar Detector & 9router SSE Stream active at /api/sonar/stream");
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, router).await?;
     Ok(())

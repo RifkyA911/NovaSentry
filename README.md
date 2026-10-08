@@ -90,7 +90,13 @@ flowchart LR
 - **Hard Cost-Control Circuit Breakers**: Halts cyclic reasoning loops at depth threshold $\le 3$, preventing runaway cloud API token consumption.
 - **Enterprise Reliability Standards**: Designed in alignment with **Monetary Authority of Singapore (MAS) Technology Risk Management (TRM)** guidelines and **NIST AI Risk Management Framework (AI RMF)**.
 
-### 4. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity
+### 4. 📡 Real-Time Acoustic Sonar Detector & 9router Gateway Mesh
+- **Acoustic Radar Visualizer**: High-resolution tactical HTML5 Canvas radar screen rendering real-time 360° sweeping beam, range rings (50ms–600ms), pulse echoes, and multi-agent LLM target blips.
+- **Server-Sent Events (SSE) Stream**: Native push streaming at `/api/sonar/stream` utilizing Axum and Tokio broadcast channels with zero-latency push to connected clients.
+- **9router Upstream Mesh Integration**: First-class gateway connector and traffic simulator routing requests across Claude 3.5 Sonnet, GPT-4o, DeepSeek-V3, and Llama 3.3 with live arbitrage cost savings tracking.
+- **Synthetic Acoustic Audio Ping**: Optional WebAudio synthesizer providing authentic auditory radar blips for incoming prompts and guardrail interceptions.
+
+### 5. 🎨 High-Contrast Enterprise Theme & Soft 3D Identity
 - **True 3D Vector Icon**: Volumetric claymorphic shield and glowing core orb with ambient occlusion and specular highlights in Carrot Orange (`#ea580c` ➔ `#f97316` ➔ `#fb923c`).
 - **Dark & Light Mode**: WCAG-compliant high-contrast navigation styling across cards, forms, and audit tables.
 - **Clean Separation of Concerns**: The Dashboard focuses exclusively on live metrics, KPIs, and sensor streams, while extensive architectural documentation resides in its own dedicated **System Guide & Docs** menu.
@@ -173,7 +179,7 @@ cargo run -- --demo
 cargo test
 ```
 
-Verifies all **10 unit and integration tests** (vector cosine math, prompt injection detection, hybrid RAG retrieval, chaos engine self-healing, and SQLite authentication).
+Verifies all **11 unit and integration tests** (vector cosine math, prompt injection detection, hybrid RAG retrieval, chaos engine self-healing, sonar engine and 9router gateway integration, and SQLite authentication).
 
 ---
 
@@ -193,6 +199,12 @@ Verifies all **10 unit and integration tests** (vector cosine math, prompt injec
 | `POST` | `/api/investigate` | Officer | Dispatches raw telemetry for automated RAG triage |
 | `GET` | `/api/audit` | Officer | Retrieves forensic compliance logs |
 | `POST` | `/api/guardrail/test` | Officer | Tests ingress/egress guardrails independently |
+| `GET` | `/api/sonar/stream` | Public | Real-time Server-Sent Events (SSE) push stream for live acoustic radar |
+| `GET` | `/api/sonar/packets` | Public | Circular buffer snapshot of recent packets in vector & latency space |
+| `GET` | `/api/sonar/9router/status` | Public | Retrieves 9router connection status, model arbitrage savings, active profile |
+| `POST` | `/api/sonar/9router/connect` | Public | Connects / reconfigures upstream 9router gateway endpoint, API key, profile |
+| `POST` | `/api/sonar/9router/disconnect` | Public | Disconnects 9router gateway, switching to local offline mode |
+| `POST` | `/api/sonar/simulate` | Public | Injects synthetic multi-agent LLM traffic packet into live sonar stream |
 | `GET` | `/api/chaos/experiments` | Public | Lists all 6 available chaos engineering scenarios |
 | `POST` | `/api/chaos/run` | Public | Injects a chaos disruption and executes self-healing verification |
 | `GET` | `/api/chaos/metrics` | Public | Retrieves resilience KPIs, tokens preserved & breaker counts |

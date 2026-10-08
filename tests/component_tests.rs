@@ -189,7 +189,8 @@ async fn test_web_app_state_and_vector_inspection() {
 
     let auth = novasentry::web::auth::AuthDb::new(":memory:").unwrap();
     let chaos = std::sync::Arc::new(novasentry::components::ChaosEngine::new());
-    let state = novasentry::web::WebAppState { sentry: engine, auth, chaos };
+    let sonar = std::sync::Arc::new(novasentry::components::SonarEngine::new());
+    let state = novasentry::web::WebAppState { sentry: engine, auth, chaos, sonar };
     let _router = novasentry::web::create_router(state);
 }
 
@@ -233,6 +234,50 @@ async fn test_chaos_engine_experiments_and_self_healing() {
     assert_eq!(metrics.successful_self_heals, 3);
     assert_eq!(metrics.circuit_breaker_trips, 1);
     assert!(metrics.estimated_tokens_preserved >= 35000);
+}
+
+#[tokio::test]
+async fn test_sonar_engine_and_9router_gateway_integration() {
+    let sonar = novasentry::components::SonarEngine::new();
+
+    // 1. Subscribe to SSE broadcast channel
+    let mut rx = sonar.subscribe();
+
+    // 2. Verify initial 9router status
+    let status_init = sonar.get_9router_status().await;
+    assert!(status_init.connected);
+    assert!(status_init.healthy);
+    assert_eq!(status_init.endpoint, "https://gateway.9router.ai/v1");
+
+    // 3. Simulate Inbound / Outbound packet
+    let packet_resp = sonar.simulate_packet(Some("response")).await;
+    assert_eq!(packet_resp.flow_type, novasentry::components::FlowType::OutboundResponse);
+    assert_eq!(packet_resp.threat_verdict, novasentry::components::ThreatVerdict::Clean);
+    assert!(packet_resp.radar_coordinate.angle_deg >= 0.0);
+
+    // Read broadcasted packet
+    let received = rx.recv().await.unwrap();
+    assert_eq!(received.id, packet_resp.id);
+
+    // 4. Test 9router Custom Connection
+    let status_connected = sonar
+        .connect_9router(
+            Some("https://custom-proxy.internal:8080/v1".to_string()),
+            Some("9r-live-enterprise-secret-key-xyz".to_string()),
+            Some("Ultra Low Latency Arbitrage".to_string()),
+        )
+        .await;
+    assert!(status_connected.connected);
+    assert_eq!(status_connected.endpoint, "https://custom-proxy.internal:8080/v1");
+    assert!(status_connected.api_key_masked.contains("••••"));
+
+    // 5. Test 9router Disconnect
+    let status_dc = sonar.disconnect_9router().await;
+    assert!(!status_dc.connected);
+
+    // 6. Test Recent Packets buffer
+    let recent = sonar.get_recent_packets().await;
+    assert!(!recent.is_empty());
 }
 
 

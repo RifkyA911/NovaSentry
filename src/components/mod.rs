@@ -6,6 +6,7 @@ pub mod generator;
 pub mod guardrail;
 pub mod retriever;
 pub mod sentry;
+pub mod sonar;
 pub mod vector_store;
 
 pub use auditor::SentryAuditor;
@@ -16,4 +17,5 @@ pub use generator::{MockLlmGenerator, PromptBuilder};
 pub use guardrail::NovaGuardrail;
 pub use retriever::HybridRetriever;
 pub use sentry::SentryEngine;
+pub use sonar::{FlowType, NineRouterConfig, NineRouterStatus, RadarCoordinate, SonarEngine, SonarPacket, ThreatVerdict};
 pub use vector_store::InMemoryVectorStore;

@@ -193,6 +193,12 @@ Menguji seluruh 9 unit test dan integrasi (vektor kosinus semantik, deteksi inje
 | `POST` | `/api/investigate` | Petugas | Mengirim laporan kejadian untuk dianalisis oleh RAG |
 | `GET` | `/api/audit` | Petugas | Melihat seluruh buku rekaman insiden |
 | `POST` | `/api/guardrail/test` | Petugas | Menguji aturan filter guardrail secara mandiri |
+| `GET` | `/api/sonar/stream` | Publik | Stream push Server-Sent Events (SSE) radar akustik real-time |
+| `GET` | `/api/sonar/packets` | Publik | Snapshot buffer sirkular paket LLM dalam ruang latensi & vektor |
+| `GET` | `/api/sonar/9router/status` | Publik | Status koneksi gateway 9router, penghematan biaya model, & profil |
+| `POST` | `/api/sonar/9router/connect` | Publik | Menghubungkan / mengubah konfigurasi gateway 9router |
+| `POST` | `/api/sonar/9router/disconnect` | Publik | Memutuskan koneksi 9router ke mode lokal luring |
+| `POST` | `/api/sonar/simulate` | Publik | Menyuntikkan simulasi paket arus multi-agen LLM |
 | `GET` | `/api/chaos/experiments` | Publik | Mendapatkan katalog 6 skenario eksperimen chaos multi-agen |
 | `POST` | `/api/chaos/run` | Publik | Menyuntikkan gangguan chaos dan menjalankan protokol pemulihan mandiri |
 | `GET` | `/api/chaos/metrics` | Publik | Mengambil telemetri ketahanan, penghematan token, dan status circuit breaker |

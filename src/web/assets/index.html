@@ -239,7 +239,22 @@
             </div>
           </button>
 
-          <!-- 2. Architecture Flow (n8n style) -->
+          <!-- 2. Real-Time Sonar Detector & 9router Gateway -->
+          <button onclick="switchView('view-sonar')" id="nav-view-sonar" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
+            <div class="relative flex items-center justify-center flex-shrink-0">
+              <i data-lucide="radio" class="w-4 h-4 text-emerald-500"></i>
+              <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            </div>
+            <div>
+              <div class="nav-title font-bold text-sm flex items-center gap-1.5">
+                <span>Sonar Detector</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-bold border border-emerald-500/20">9router</span>
+              </div>
+              <div class="nav-sub text-[10px] font-normal">Real-time LLM stream radar</div>
+            </div>
+          </button>
+
+          <!-- 3. Architecture Flow (n8n style) -->
           <button onclick="switchView('view-flow')" id="nav-view-flow" class="nav-item w-full flex items-center gap-3 px-3.5 py-3 rounded-xl transition text-left">
             <i data-lucide="git-merge" class="w-4 h-4 flex-shrink-0"></i>
             <div>
@@ -530,7 +545,256 @@
         </section>
 
         <!-- ============================================== -->
-        <!-- VIEW 2: ARCHITECTURE FLOW (n8n-STYLE GRAPH)   -->
+        <!-- VIEW: REAL-TIME SONAR DETECTOR & 9ROUTER MESH  -->
+        <!-- ============================================== -->
+        <section id="view-sonar" class="view-panel hidden space-y-6">
+
+          <!-- Top Control Header Banner -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent border-2 border-emerald-500/30 dark:border-emerald-500/20 backdrop-blur-xl relative overflow-hidden space-y-5">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div class="space-y-2 max-w-2xl">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 inline-flex items-center gap-1.5 font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Acoustic Sonar Detector &amp; LLM Stream Radar</span>
+                  </span>
+                  <span id="sonar-9router-badge" class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span id="sonar-9router-badge-text">9router: CONNECTED</span>
+                  </span>
+                  <span id="sonar-sse-badge" class="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20 flex items-center gap-1">
+                    <i data-lucide="radio" class="w-3 h-3"></i>
+                    <span>SSE Stream: LIVE</span>
+                  </span>
+                </div>
+                <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Real-Time Multi-Agent Packet Flow &amp; Gateway Arbitrage
+                </h3>
+                <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Acoustic radar scanning for inbound prompts, multi-agent reasoning pulses, model arbitrage hops, and perimeter guardrail interceptions routed through the <strong>9router Gateway Mesh</strong>.
+                </p>
+              </div>
+
+              <!-- Action Controls -->
+              <div class="flex flex-wrap items-center gap-2.5">
+                <button onclick="toggleSonarAutoStream()" id="btn-sonar-autostream" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md shadow-emerald-600/20">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span id="label-sonar-autostream">Stream Active (2.5s)</span>
+                </button>
+                <button onclick="toggleSonarAudio()" id="btn-sonar-audio" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
+                  <i id="icon-sonar-audio" data-lucide="volume-x" class="w-3.5 h-3.5 text-slate-400"></i>
+                  <span id="label-sonar-audio">Audio Muted</span>
+                </button>
+                <button onclick="open9RouterModal()" class="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center gap-1.5 transition border border-slate-200 dark:border-slate-700">
+                  <i data-lucide="settings" class="w-3.5 h-3.5 text-carrot-500"></i>
+                  <span>9router Settings</span>
+                </button>
+                <button onclick="toggle9RouterConnection()" id="btn-sonar-toggle-9router" class="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition">
+                  <i data-lucide="power" class="w-3.5 h-3.5"></i>
+                  <span id="label-toggle-9router">Disconnect 9router</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 9router Metrics Overview Bar -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 pt-2">
+              <div class="p-3.5 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Packets Routed</div>
+                <div id="sonar-kpi-routed" class="text-xl font-black text-slate-900 dark:text-white font-mono">14</div>
+                <div class="text-[9px] text-slate-400">Total LLM flow events</div>
+              </div>
+              <div class="p-3.5 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-sky-500">Tokens Streamed</div>
+                <div id="sonar-kpi-tokens" class="text-xl font-black text-sky-500 font-mono">58,420</div>
+                <div class="text-[9px] text-slate-400">Prompt + Completion</div>
+              </div>
+              <div class="p-3.5 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-emerald-500">Arbitrage Savings</div>
+                <div id="sonar-kpi-savings" class="text-xl font-black text-emerald-500 font-mono">$0.20</div>
+                <div class="text-[9px] text-slate-400">Model cost reduction via 9router</div>
+              </div>
+              <div class="p-3.5 rounded-2xl bg-white/80 dark:bg-[#111625]/90 border border-slate-200 dark:border-slate-800 space-y-1">
+                <div class="text-[10px] uppercase font-bold text-carrot-500">Upstream Mesh</div>
+                <div id="sonar-kpi-mesh" class="text-xs font-bold text-carrot-500 font-mono truncate">4 Nodes (Claude, GPT, DeepSeek, Llama)</div>
+                <div class="text-[9px] text-slate-400">Active failover graph</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tactical Radar & Real-Time Inspector Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- Left: Radar Screen (7 cols) -->
+            <div class="lg:col-span-7 p-6 rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div class="flex items-center gap-2">
+                  <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <span class="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">Acoustic Sonar Radar Screen</span>
+                </div>
+                <div class="flex items-center gap-3 text-[11px] font-mono text-slate-400">
+                  <span id="sonar-sweep-angle">BEAM: 045°</span>
+                  <span id="sonar-blips-count" class="text-emerald-400 font-bold">TARGETS: 2</span>
+                </div>
+              </div>
+
+              <!-- Canvas Viewport -->
+              <div class="relative w-full aspect-square max-w-[460px] mx-auto flex items-center justify-center p-2">
+                <canvas id="sonar-radar-canvas" width="460" height="460" class="w-full h-full rounded-full cursor-crosshair shadow-[0_0_50px_rgba(16,185,129,0.12)]"></canvas>
+              </div>
+
+              <!-- Radar Legend & Range Scale -->
+              <div class="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono">
+                <div class="flex flex-wrap items-center gap-3">
+                  <span class="flex items-center gap-1.5 text-emerald-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>Clean Response</span>
+                  </span>
+                  <span class="flex items-center gap-1.5 text-sky-400">
+                    <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                    <span>Inbound Pulse</span>
+                  </span>
+                  <span class="flex items-center gap-1.5 text-amber-400">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>9router Fallback</span>
+                  </span>
+                  <span class="flex items-center gap-1.5 text-rose-400">
+                    <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                    <span>Blocked Attack</span>
+                  </span>
+                </div>
+                <span class="text-slate-500">Scale: 50ms (Center) - 600ms (Rim)</span>
+              </div>
+            </div>
+
+            <!-- Right: Blip Inspector & Simulation Controls (5 cols) -->
+            <div class="lg:col-span-5 space-y-4">
+
+              <!-- Active Blip Inspector HUD -->
+              <div class="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl space-y-3 font-mono text-xs">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                  <span class="font-bold text-slate-200 uppercase flex items-center gap-1.5">
+                    <i data-lucide="scan" class="w-3.5 h-3.5 text-carrot-500"></i>
+                    <span>Packet Telemetry Inspector</span>
+                  </span>
+                  <span id="sonar-inspect-verdict" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    CLEAN
+                  </span>
+                </div>
+
+                <div class="space-y-2 text-[11px]">
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">Trace ID:</span>
+                    <span id="sonar-inspect-id" class="text-slate-200 font-bold">pkt-9r-init</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">Flow Direction:</span>
+                    <span id="sonar-inspect-flow" class="text-sky-400 font-bold">Inbound Request</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">9router Gateway Hop:</span>
+                    <span id="sonar-inspect-gateway" class="text-emerald-400 font-bold">9router Edge v2.4</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">Provider &amp; Model:</span>
+                    <span id="sonar-inspect-model" class="text-slate-200 font-bold">Anthropic / claude-3-5-sonnet</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">Roundtrip Latency:</span>
+                    <span id="sonar-inspect-latency" class="text-amber-400 font-bold">145 ms</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">Token Cost / Est:</span>
+                    <span id="sonar-inspect-cost" class="text-slate-200">1,240 tokens ($0.0037)</span>
+                  </div>
+                  <div class="flex justify-between py-1 border-b border-slate-800/50">
+                    <span class="text-slate-400">Acoustic Signal:</span>
+                    <span id="sonar-inspect-freq" class="text-slate-300">15.0 kHz (-10.5 dB)</span>
+                  </div>
+                </div>
+
+                <!-- Payload Preview Box -->
+                <div class="pt-2">
+                  <div class="text-[10px] uppercase text-slate-400 font-bold mb-1">Payload Excerpt</div>
+                  <div id="sonar-inspect-payload" class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[10px] text-slate-300 leading-relaxed font-mono break-all max-h-24 overflow-y-auto">
+                    INBOUND_STREAM: Analyzing multi-agent memory drift telemetry across 4 worker nodes.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Injection & Simulation Triggers -->
+              <div class="p-5 rounded-3xl bg-white dark:bg-[#0c101d] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+                <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i>
+                  <span>Simulate 9router Traffic Pings</span>
+                </h4>
+                <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+                  <button onclick="simulateSonarPing('auto')" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="send" class="w-3.5 h-3.5 text-sky-500"></i>
+                    <span>Inbound Pulse</span>
+                  </button>
+                  <button onclick="simulateSonarPing('response')" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-500"></i>
+                    <span>LLM Response</span>
+                  </button>
+                  <button onclick="simulateSonarPing('fallback')" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="git-branch" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Failover Node</span>
+                  </button>
+                  <button onclick="simulateSonarPing('blocked')" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="shield-x" class="w-3.5 h-3.5 text-rose-500"></i>
+                    <span>Guardrail Intercept</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Real-Time SSE Stream Table -->
+          <div class="p-6 rounded-3xl bg-white dark:bg-[#0c101d] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800/80 pb-3">
+              <div>
+                <h4 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                  <i data-lucide="activity" class="w-4 h-4 text-emerald-500"></i>
+                  <span>Live Sonar LLM Packet Stream (Server-Sent Events)</span>
+                </h4>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Streamed via <code>/api/sonar/stream</code> with zero-latency push</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="clearSonarTable()" class="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  Clear View
+                </button>
+              </div>
+            </div>
+
+            <!-- Scrolling Table Container -->
+            <div class="overflow-x-auto max-h-96 overflow-y-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400 font-mono">
+                    <th class="py-2.5 px-3">Time</th>
+                    <th class="py-2.5 px-3">Trace ID</th>
+                    <th class="py-2.5 px-3">Flow Type</th>
+                    <th class="py-2.5 px-3">9router Route</th>
+                    <th class="py-2.5 px-3 text-right">Latency</th>
+                    <th class="py-2.5 px-3 text-right">Tokens</th>
+                    <th class="py-2.5 px-3 text-right">Cost</th>
+                    <th class="py-2.5 px-3 text-center">Threat Verdict</th>
+                    <th class="py-2.5 px-3">Payload Summary</th>
+                  </tr>
+                </thead>
+                <tbody id="sonar-packets-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-[11px]">
+                  <!-- Populated in real time via SSE -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- VIEW 3: ARCHITECTURE FLOW (n8n-STYLE GRAPH)   -->
         <!-- ============================================== -->
         <section id="view-flow" class="view-panel hidden space-y-6">
           <div class="p-6 rounded-3xl bg-white dark:bg-[#0c101d] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
@@ -1294,6 +1558,54 @@
     </main>
   </div>
 
+  <!-- MODAL: 9ROUTER GATEWAY CONFIGURATION -->
+  <div id="modal-9router" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+    <div class="w-full max-w-lg bg-white dark:bg-[#0c101d] rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <h4 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
+          <i data-lucide="radio" class="w-4 h-4 text-emerald-500"></i>
+          <span>Configure 9router Gateway Connection</span>
+        </h4>
+        <button onclick="close9RouterModal()" class="text-slate-400 hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handle9RouterConnect(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold uppercase text-slate-400 mb-1">9router Gateway Endpoint</label>
+          <input type="text" id="cfg-9r-endpoint" value="https://gateway.9router.ai/v1" required
+                 class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white">
+          <p class="text-[10px] text-slate-500 mt-0.5">Public Cloud endpoint or local proxy <code>http://localhost:8080/v1</code></p>
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-400 mb-1">Gateway API Secret Key</label>
+          <input type="password" id="cfg-9r-apikey" value="9r-live-pub-novasentry-secops-v1" required
+                 class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white">
+        </div>
+        <div>
+          <label class="block font-bold uppercase text-slate-400 mb-1">Routing Profile</label>
+          <select id="cfg-9r-profile" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 font-mono focus:outline-none focus:border-emerald-500 text-slate-900 dark:text-white">
+            <option value="Smart Low-Latency & Failover Mesh">Smart Low-Latency &amp; Failover Mesh</option>
+            <option value="Cost Minimizer Arbitrage">Cost Minimizer Arbitrage</option>
+            <option value="Multi-Region Enterprise High Availability">Multi-Region Enterprise High Availability</option>
+            <option value="Local Air-Gapped Privacy Mesh">Local Air-Gapped Privacy Mesh</option>
+          </select>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2">
+          <button type="button" onclick="close9RouterModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 font-semibold text-slate-600 dark:text-slate-300">
+            Cancel
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Save &amp; Connect to 9router</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: INGEST NEW PLAYBOOK -->
   <div id="ingest-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
     <div class="w-full max-w-lg bg-white dark:bg-[#0c101d] rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-2xl">
@@ -1453,6 +1765,8 @@
           refreshStats();
           refreshKnowledge();
           refreshAudit();
+          initSonarStream();
+          refresh9RouterStatus();
         } else {
           localStorage.removeItem('novasentry_token');
           showAuthPage();
@@ -1513,6 +1827,8 @@
           refreshStats();
           refreshKnowledge();
           refreshAudit();
+          initSonarStream();
+          refresh9RouterStatus();
         } else {
           if (errBanner) {
             errText.innerText = data.message || 'Authentication failed. Please verify credentials.';
@@ -1572,6 +1888,7 @@
       if (titleEl) {
         const titles = {
           'view-dashboard': 'Security Operations Dashboard',
+          'view-sonar': 'Acoustic Sonar Detector & 9router Gateway Mesh',
           'view-flow': 'Architecture Flow Visualizer (n8n Style)',
           'view-investigate': 'Incident Triage & Mitigation Lab',
           'view-guardrail': 'Perimeter Guardrail Validator',
@@ -1588,6 +1905,9 @@
         setTimeout(updateFlowWires, 50);
       } else if (viewId === 'view-chaos') {
         refreshChaosMetrics();
+      } else if (viewId === 'view-sonar') {
+        initSonarRadar();
+        refresh9RouterStatus();
       }
       lucide.createIcons();
     }
@@ -2276,6 +2596,652 @@
         }
       }
     }
+
+    // ==============================================
+    // SONAR DETECTOR & 9ROUTER GATEWAY CLIENT ENGINE
+    // ==============================================
+
+    let sonarEventSource = null;
+    let sonarBlips = [];
+    let sonarAudioEnabled = false;
+    let sonarAudioCtx = null;
+    let sonarAutoStreamInterval = null;
+    let sonarRadarAnimId = null;
+    let sonarSweepAngle = 0;
+    let sonarRecentPacketsMap = new Map();
+
+    // Initialize Web Audio API on first user gesture
+    function getSonarAudioContext() {
+      if (!sonarAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          sonarAudioCtx = new AudioContextClass();
+        }
+      }
+      if (sonarAudioCtx && sonarAudioCtx.state === 'suspended') {
+        sonarAudioCtx.resume();
+      }
+      return sonarAudioCtx;
+    }
+
+    function toggleSonarAudio() {
+      sonarAudioEnabled = !sonarAudioEnabled;
+      const label = document.getElementById('label-sonar-audio');
+      const icon = document.getElementById('icon-sonar-audio');
+      if (sonarAudioEnabled) {
+        getSonarAudioContext();
+        if (label) label.innerText = 'Audio Active';
+        if (icon) {
+          icon.setAttribute('data-lucide', 'volume-2');
+          icon.classList.remove('text-slate-400');
+          icon.classList.add('text-emerald-500');
+        }
+      } else {
+        if (label) label.innerText = 'Audio Muted';
+        if (icon) {
+          icon.setAttribute('data-lucide', 'volume-x');
+          icon.classList.remove('text-emerald-500');
+          icon.classList.add('text-slate-400');
+        }
+      }
+      lucide.createIcons();
+    }
+
+    function playSonarPing(freqKhz = 15.0, isBlocked = false) {
+      if (!sonarAudioEnabled) return;
+      try {
+        const ctx = getSonarAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Synthetic acoustic ping frequency
+        const baseFreq = isBlocked ? 320 : (Math.max(400, Math.min(1800, freqKhz * 70)));
+        osc.type = isBlocked ? 'sawtooth' : 'sine';
+        osc.frequency.setValueAtTime(baseFreq, now);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * (isBlocked ? 0.6 : 0.85), now + 0.22);
+
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.26);
+      } catch (e) {
+        // Audio policy ignore
+      }
+    }
+
+    // Connect to Backend Real-Time SSE Stream
+    function initSonarStream() {
+      if (sonarEventSource) return;
+
+      const sseBadge = document.getElementById('sonar-sse-badge');
+      try {
+        sonarEventSource = new EventSource('/api/sonar/stream');
+
+        sonarEventSource.onopen = () => {
+          if (sseBadge) {
+            sseBadge.className = 'px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1';
+            sseBadge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> <span>SSE: STREAMING</span>';
+          }
+        };
+
+        sonarEventSource.addEventListener('sonar_pulse', (e) => {
+          try {
+            const packet = JSON.parse(e.data);
+            handleIncomingSonarPacket(packet);
+          } catch (err) {
+            console.error('Failed to parse sonar packet:', err);
+          }
+        });
+
+        sonarEventSource.onerror = () => {
+          if (sseBadge) {
+            sseBadge.className = 'px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center gap-1';
+            sseBadge.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3 animate-spin"></i> <span>SSE: RECONNECTING</span>';
+            lucide.createIcons();
+          }
+        };
+      } catch (err) {
+        console.error('Could not initialize SSE stream:', err);
+      }
+
+      // Also fetch recent packets immediately to backfill
+      fetchRecentSonarPackets();
+    }
+
+    async function fetchRecentSonarPackets() {
+      try {
+        const res = await fetch('/api/sonar/packets');
+        if (res.ok) {
+          const packets = await res.json();
+          packets.forEach(p => handleIncomingSonarPacket(p, false));
+        }
+      } catch (e) {}
+    }
+
+    function handleIncomingSonarPacket(packet, triggerAudio = true) {
+      if (!packet || !packet.id) return;
+      sonarRecentPacketsMap.set(packet.id, packet);
+
+      // Add to radar blips
+      const angleRad = (packet.radar_coordinate.angle_deg * Math.PI) / 180;
+      const distance = Math.max(0.12, Math.min(0.92, packet.radar_coordinate.distance_norm));
+
+      let blipColor = '#10b981'; // Green (Clean / Outbound)
+      if (packet.threat_verdict === 'blocked') {
+        blipColor = '#f43f5e'; // Red (Blocked)
+      } else if (packet.flow_type === 'router_fallback' || packet.threat_verdict === 'suspicious') {
+        blipColor = '#f59e0b'; // Amber (Fallback)
+      } else if (packet.flow_type === 'inbound_request') {
+        blipColor = '#38bdf8'; // Sky (Inbound)
+      }
+
+      sonarBlips.push({
+        id: packet.id,
+        angleRad,
+        distance,
+        color: blipColor,
+        verdict: packet.threat_verdict,
+        flow: packet.flow_type,
+        model: packet.model,
+        latency: packet.latency_ms,
+        data: packet,
+        bornAt: performance.now(),
+        ttl: 8500, // 8.5 seconds lifetime
+        flash: 1.0,
+      });
+
+      // Keep max 40 active blips on radar
+      if (sonarBlips.length > 40) {
+        sonarBlips.shift();
+      }
+
+      // Play audio ping
+      if (triggerAudio) {
+        playSonarPing(
+          packet.radar_coordinate.frequency_khz,
+          packet.threat_verdict === 'blocked'
+        );
+      }
+
+      // Update Inspector HUD with the newest packet
+      inspectSonarPacket(packet.id);
+
+      // Add to live table
+      addSonarPacketToTable(packet);
+
+      // Update blips counter on screen
+      const blipsCounter = document.getElementById('sonar-blips-count');
+      if (blipsCounter) {
+        blipsCounter.innerText = `TARGETS: ${sonarBlips.length}`;
+      }
+    }
+
+    function inspectSonarPacket(packetId) {
+      const packet = sonarRecentPacketsMap.get(packetId);
+      if (!packet) return;
+
+      const elId = document.getElementById('sonar-inspect-id');
+      const elFlow = document.getElementById('sonar-inspect-flow');
+      const elGateway = document.getElementById('sonar-inspect-gateway');
+      const elModel = document.getElementById('sonar-inspect-model');
+      const elLatency = document.getElementById('sonar-inspect-latency');
+      const elCost = document.getElementById('sonar-inspect-cost');
+      const elFreq = document.getElementById('sonar-inspect-freq');
+      const elPayload = document.getElementById('sonar-inspect-payload');
+      const elVerdict = document.getElementById('sonar-inspect-verdict');
+
+      if (elId) elId.innerText = packet.id;
+      if (elFlow) {
+        const flowLabels = {
+          'inbound_request': 'Inbound Request',
+          'outbound_response': 'Outbound Response',
+          'guardrail_interception': 'Guardrail Interception',
+          'router_fallback': '9router Fallback Hop',
+          'gateway_handshake': 'Gateway Handshake'
+        };
+        elFlow.innerText = flowLabels[packet.flow_type] || packet.flow_type;
+      }
+      if (elGateway) elGateway.innerText = packet.upstream_gateway;
+      if (elModel) elModel.innerText = `${packet.provider} / ${packet.model}`;
+      if (elLatency) elLatency.innerText = `${packet.latency_ms} ms`;
+      if (elCost) {
+        const totalTok = packet.prompt_tokens + packet.completion_tokens;
+        elCost.innerText = `${totalTok.toLocaleString()} tokens ($${packet.estimated_cost_usd.toFixed(5)})`;
+      }
+      if (elFreq) {
+        elFreq.innerText = `${packet.radar_coordinate.frequency_khz.toFixed(1)} kHz (${packet.radar_coordinate.intensity_db.toFixed(1)} dB)`;
+      }
+      if (elPayload) elPayload.innerText = packet.payload_preview;
+
+      if (elVerdict) {
+        const v = packet.threat_verdict;
+        if (v === 'blocked') {
+          elVerdict.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20';
+          elVerdict.innerText = 'BLOCKED [ISOLATED]';
+        } else if (v === 'suspicious' || v === 'anomalous') {
+          elVerdict.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+          elVerdict.innerText = 'SUSPICIOUS / FALLBACK';
+        } else {
+          elVerdict.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+          elVerdict.innerText = 'CLEAN [PASSED]';
+        }
+      }
+    }
+
+    function addSonarPacketToTable(packet) {
+      const tbody = document.getElementById('sonar-packets-tbody');
+      if (!tbody) return;
+
+      const row = document.createElement('tr');
+      row.className = 'hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition cursor-pointer';
+      row.onclick = () => inspectSonarPacket(packet.id);
+
+      const d = new Date(packet.timestamp);
+      const timeStr = d.toLocaleTimeString() + '.' + String(d.getMilliseconds()).padStart(3, '0');
+
+      let flowBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-500/10 text-sky-500 border border-sky-500/20">Inbound</span>';
+      if (packet.flow_type === 'outbound_response') {
+        flowBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Response</span>';
+      } else if (packet.flow_type === 'guardrail_interception') {
+        flowBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">Intercept</span>';
+      } else if (packet.flow_type === 'router_fallback') {
+        flowBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/20">Failover</span>';
+      }
+
+      let verdictBadge = '<span class="text-emerald-500 font-bold">CLEAN</span>';
+      if (packet.threat_verdict === 'blocked') {
+        verdictBadge = '<span class="text-rose-500 font-bold">BLOCKED</span>';
+      } else if (packet.threat_verdict === 'suspicious') {
+        verdictBadge = '<span class="text-amber-500 font-bold">WARNING</span>';
+      }
+
+      const totalTokens = packet.prompt_tokens + packet.completion_tokens;
+
+      row.innerHTML = `
+        <td class="py-2 px-3 text-slate-400 whitespace-nowrap">${timeStr}</td>
+        <td class="py-2 px-3 font-bold text-slate-800 dark:text-slate-200">${packet.id}</td>
+        <td class="py-2 px-3">${flowBadge}</td>
+        <td class="py-2 px-3 text-slate-600 dark:text-slate-300 font-semibold truncate max-w-[140px]" title="${packet.model}">${packet.model}</td>
+        <td class="py-2 px-3 text-right text-amber-500 font-bold">${packet.latency_ms}ms</td>
+        <td class="py-2 px-3 text-right text-slate-600 dark:text-slate-300">${totalTokens.toLocaleString()}</td>
+        <td class="py-2 px-3 text-right text-slate-500 font-mono">$${packet.estimated_cost_usd.toFixed(5)}</td>
+        <td class="py-2 px-3 text-center">${verdictBadge}</td>
+        <td class="py-2 px-3 text-slate-500 truncate max-w-[220px]" title="${packet.payload_preview}">${packet.payload_preview}</td>
+      `;
+
+      tbody.insertBefore(row, tbody.firstChild);
+
+      // Keep max 50 rows in DOM
+      if (tbody.children.length > 50) {
+        tbody.removeChild(tbody.lastChild);
+      }
+    }
+
+    function clearSonarTable() {
+      const tbody = document.getElementById('sonar-packets-tbody');
+      if (tbody) tbody.innerHTML = '';
+      sonarBlips = [];
+      const blipsCounter = document.getElementById('sonar-blips-count');
+      if (blipsCounter) blipsCounter.innerText = 'TARGETS: 0';
+    }
+
+    // 9router Gateway API Connection & Status
+    async function refresh9RouterStatus() {
+      try {
+        const res = await fetch('/api/sonar/9router/status');
+        if (res.ok) {
+          const s = await res.json();
+          update9RouterUI(s);
+        }
+      } catch (e) {
+        console.error('Failed to get 9router status:', e);
+      }
+    }
+
+    function update9RouterUI(s) {
+      const badge = document.getElementById('sonar-9router-badge');
+      const badgeText = document.getElementById('sonar-9router-badge-text');
+      const toggleBtn = document.getElementById('btn-sonar-toggle-9router');
+      const toggleLabel = document.getElementById('label-toggle-9router');
+      const kpiRouted = document.getElementById('sonar-kpi-routed');
+      const kpiTokens = document.getElementById('sonar-kpi-tokens');
+      const kpiSavings = document.getElementById('sonar-kpi-savings');
+      const kpiMesh = document.getElementById('sonar-kpi-mesh');
+
+      if (kpiRouted) kpiRouted.innerText = s.total_routed_packets.toLocaleString();
+      if (kpiTokens) kpiTokens.innerText = s.total_tokens_routed.toLocaleString();
+      if (kpiSavings) kpiSavings.innerText = `$${s.total_cost_saved_usd.toFixed(2)}`;
+      if (kpiMesh) kpiMesh.innerText = `${s.upstream_mesh.length} Nodes (${s.routing_profile})`;
+
+      if (s.connected) {
+        if (badge) badge.className = 'px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1';
+        if (badgeText) badgeText.innerText = '9router: CONNECTED';
+        if (toggleLabel) toggleLabel.innerText = 'Disconnect 9router';
+        if (toggleBtn) toggleBtn.className = 'px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition';
+      } else {
+        if (badge) badge.className = 'px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20 flex items-center gap-1';
+        if (badgeText) badgeText.innerText = '9router: OFFLINE (Local)';
+        if (toggleLabel) toggleLabel.innerText = 'Connect 9router';
+        if (toggleBtn) toggleBtn.className = 'px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md shadow-emerald-600/20';
+      }
+      lucide.createIcons();
+    }
+
+    async function toggle9RouterConnection() {
+      try {
+        const statusRes = await fetch('/api/sonar/9router/status');
+        const status = await statusRes.json();
+        const endpoint = status.connected ? '/api/sonar/9router/disconnect' : '/api/sonar/9router/connect';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          update9RouterUI(updated);
+        }
+      } catch (e) {
+        console.error('Error toggling 9router:', e);
+      }
+    }
+
+    function open9RouterModal() {
+      const modal = document.getElementById('modal-9router');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        lucide.createIcons();
+      }
+    }
+
+    function close9RouterModal() {
+      const modal = document.getElementById('modal-9router');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function handle9RouterConnect(e) {
+      e.preventDefault();
+      const endpoint = document.getElementById('cfg-9r-endpoint').value.trim();
+      const apiKey = document.getElementById('cfg-9r-apikey').value.trim();
+      const profile = document.getElementById('cfg-9r-profile').value;
+
+      try {
+        const res = await fetch('/api/sonar/9router/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint,
+            api_key: apiKey,
+            routing_profile: profile
+          })
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          update9RouterUI(updated);
+          close9RouterModal();
+        }
+      } catch (err) {
+        alert('Failed to connect to 9router: ' + err.message);
+      }
+    }
+
+    // Traffic Simulation Pings
+    async function simulateSonarPing(sampleType) {
+      try {
+        const res = await fetch('/api/sonar/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sample_type: sampleType })
+        });
+        if (res.ok) {
+          const packet = await res.json();
+          refresh9RouterStatus();
+        }
+      } catch (e) {
+        console.error('Simulation error:', e);
+      }
+    }
+
+    function toggleSonarAutoStream() {
+      const btn = document.getElementById('btn-sonar-autostream');
+      const label = document.getElementById('label-sonar-autostream');
+
+      if (sonarAutoStreamInterval) {
+        clearInterval(sonarAutoStreamInterval);
+        sonarAutoStreamInterval = null;
+        if (label) label.innerText = 'Stream Paused';
+        if (btn) btn.className = 'px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 transition';
+      } else {
+        // Send initial ping immediately, then loop every 2.4s
+        simulateSonarPing('auto');
+        sonarAutoStreamInterval = setInterval(() => {
+          const types = ['auto', 'response', 'fallback', 'blocked'];
+          const chosen = types[Math.floor(Math.random() * types.length)];
+          simulateSonarPing(chosen);
+        }, 2400);
+        if (label) label.innerText = 'Stream Active (2.4s)';
+        if (btn) btn.className = 'px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-md shadow-emerald-600/20';
+      }
+      lucide.createIcons();
+    }
+
+    // HTML5 Tactical Sonar Radar Animation Canvas
+    function initSonarRadar() {
+      const canvas = document.getElementById('sonar-radar-canvas');
+      if (!canvas) return;
+
+      if (!sonarRadarAnimId) {
+        sonarRadarAnimId = requestAnimationFrame(renderSonarRadar);
+      }
+    }
+
+    function renderSonarRadar() {
+      const canvas = document.getElementById('sonar-radar-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const cx = width / 2;
+      const cy = height / 2;
+      const maxR = cx - 12;
+
+      // Rotate sweep beam
+      sonarSweepAngle = (sonarSweepAngle + 0.022) % (Math.PI * 2);
+      const sweepDeg = Math.round((sonarSweepAngle * 180 / Math.PI));
+      const sweepIndicator = document.getElementById('sonar-sweep-angle');
+      if (sweepIndicator) {
+        sweepIndicator.innerText = `BEAM: ${String(sweepDeg).padStart(3, '0')}°`;
+      }
+
+      // 1. Dark Radar Backdrop
+      ctx.clearRect(0, 0, width, height);
+
+      // Radial dark background gradient
+      const bgGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, maxR);
+      bgGrad.addColorStop(0, '#030712');
+      bgGrad.addColorStop(0.7, '#020617');
+      bgGrad.addColorStop(1, '#01040a');
+      ctx.fillStyle = bgGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Outer bezel ring
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#10b981';
+      ctx.shadowBlur = 8;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // 2. Concentric Range Rings (50ms, 150ms, 300ms, 600ms)
+      const rings = [0.25, 0.50, 0.75, 1.0];
+      const ringLabels = ['50ms', '150ms', '300ms', '600ms'];
+      ctx.lineWidth = 1;
+      rings.forEach((ratio, idx) => {
+        const r = maxR * ratio;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = ratio === 1.0 ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.18)';
+        ctx.setLineDash(ratio === 1.0 ? [] : [4, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Latency label
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.45)';
+        ctx.font = '9px monospace';
+        ctx.fillText(ringLabels[idx], cx + 4, cy - r + 11);
+      });
+
+      // 3. Degree Crosshairs & Radial Ticks
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.18)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - maxR, cy);
+      ctx.lineTo(cx + maxR, cy);
+      ctx.moveTo(cx, cy - maxR);
+      ctx.lineTo(cx, cy + maxR);
+      ctx.stroke();
+
+      // 4. Rotating Sweep Beam with Phosphor Gradient Trail
+      const trailAngle = Math.PI / 4; // 45 degrees trail
+      const sweepGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+      sweepGrad.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+      sweepGrad.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, maxR, sonarSweepAngle - trailAngle, sonarSweepAngle);
+      ctx.closePath();
+      ctx.fillStyle = sweepGrad;
+      ctx.fill();
+
+      // Sharp sweep leading needle
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(
+        cx + maxR * Math.cos(sonarSweepAngle),
+        cy + maxR * Math.sin(sonarSweepAngle)
+      );
+      ctx.strokeStyle = '#34d399';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#10b981';
+      ctx.shadowBlur = 10;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+
+      // 5. Render Active Target Blips
+      const nowTime = performance.now();
+      sonarBlips = sonarBlips.filter(blip => (nowTime - blip.bornAt) < blip.ttl);
+
+      sonarBlips.forEach(blip => {
+        const age = nowTime - blip.bornAt;
+        const lifeRatio = 1.0 - (age / blip.ttl);
+        const bx = cx + (maxR * blip.distance) * Math.cos(blip.angleRad);
+        const by = cy + (maxR * blip.distance) * Math.sin(blip.angleRad);
+
+        // Calculate angular difference to sweep beam
+        let diff = Math.abs(sonarSweepAngle - blip.angleRad);
+        if (diff > Math.PI) diff = (Math.PI * 2) - diff;
+
+        // Flash brightly if sweep just crossed the blip
+        if (diff < 0.08) {
+          blip.flash = 1.0;
+        } else {
+          blip.flash = Math.max(0.2, blip.flash - 0.015);
+        }
+
+        const alpha = Math.max(0.15, lifeRatio * blip.flash);
+
+        // Echo ripple wave expanding outward from blip
+        const echoRadius = (age % 1200) / 40;
+        ctx.beginPath();
+        ctx.arc(bx, by, 4 + echoRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = blip.color;
+        ctx.globalAlpha = Math.max(0, (1.0 - (echoRadius / 30)) * 0.4 * alpha);
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+
+        // Glowing core dot
+        ctx.save();
+        ctx.shadowColor = blip.color;
+        ctx.shadowBlur = 12 * blip.flash;
+        ctx.fillStyle = blip.color;
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(bx, by, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Label above blip
+        ctx.fillStyle = blip.color;
+        ctx.globalAlpha = alpha * 0.85;
+        ctx.font = '8px monospace';
+        ctx.fillText(`${blip.latency}ms`, bx + 5, by - 4);
+        ctx.globalAlpha = 1.0;
+      });
+
+      // 6. Center Transducer Node
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#34d399';
+      ctx.shadowColor = '#34d399';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Loop frame
+      sonarRadarAnimId = requestAnimationFrame(renderSonarRadar);
+    }
+
+    // Auto initialize Sonar stream on window load & handle radar canvas clicks
+    window.addEventListener('DOMContentLoaded', () => {
+      initSonarStream();
+      initSonarRadar();
+      refresh9RouterStatus();
+
+      const radarCanvas = document.getElementById('sonar-radar-canvas');
+      if (radarCanvas) {
+        radarCanvas.addEventListener('click', (e) => {
+          const rect = radarCanvas.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const clickY = e.clientY - rect.top;
+          const scaleX = radarCanvas.width / rect.width;
+          const scaleY = radarCanvas.height / rect.height;
+          const cx = radarCanvas.width / 2;
+          const cy = radarCanvas.height / 2;
+          const maxR = cx - 12;
+
+          let closest = null;
+          let minD = 30; // hit radius
+          sonarBlips.forEach(b => {
+            const bx = cx + (maxR * b.distance) * Math.cos(b.angleRad);
+            const by = cy + (maxR * b.distance) * Math.sin(b.angleRad);
+            const dist = Math.hypot((clickX * scaleX) - bx, (clickY * scaleY) - by);
+            if (dist < minD) {
+              minD = dist;
+              closest = b;
+            }
+          });
+
+          if (closest) {
+            inspectSonarPacket(closest.id);
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>
